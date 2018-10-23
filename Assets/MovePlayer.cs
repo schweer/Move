@@ -13,10 +13,6 @@ public class MovePlayer : MonoBehaviour {
 
     void Update()
     {
-        position = transform.position;
-        position.y -= (float) 0.01;
-        transform.position = position;
-
         if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
             position = transform.position;
