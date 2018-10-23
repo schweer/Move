@@ -12,8 +12,7 @@ public class FollowObjectCamera : MonoBehaviour {
     const float x_offset = 0F;
     const float y_offset = 1F;
     const float z_offset = -5F;
-
-    // Use this for initialization
+    
     void Start () {
         game_object = GameObject.Find(object_name);
 
@@ -24,7 +23,6 @@ public class FollowObjectCamera : MonoBehaviour {
         transform.position = position;
     }
 	
-	// Update is called once per frame
 	void Update () {
         position.x = game_object.transform.position.x + x_offset;
         position.y = game_object.transform.position.y + y_offset;
