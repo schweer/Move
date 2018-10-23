@@ -7,7 +7,7 @@ public class FollowObjectCamera : MonoBehaviour {
     GameObject game_object;
     Vector3 position;
 
-    const string object_name = "Player";
+    const string object_name = "Player"; // Specify your object here
     const float acceleration = 0.1F;
     const float x_offset = 0F;
     const float y_offset = 1F;
