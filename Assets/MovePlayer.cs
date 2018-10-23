@@ -28,13 +28,13 @@ public class MovePlayer : MonoBehaviour {
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
             position = transform.position;
-            position.y++;
+            position.z++;
             transform.position = position;
         }
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
             position = transform.position;
-            position.y--;
+            position.z--;
             transform.position = position;
         }
     }
