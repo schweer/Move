@@ -3,12 +3,18 @@ using System.Collections;
 
 public class PlayerCamera : MonoBehaviour
 {
-    public GameObject player;
-    public Camera player_camera;
+    public float look_sensitivity = 2.0F;
+    public float scroll_sensitivity = 2.0F;
 
-    public Vector3 offset;
+    private GameObject player;
+    private Camera player_camera;
 
-    public float rotation_speed = 3.0F;
+    private float scroll_wheel_movement;
+    private Vector3 camera_zoom;
+    private Vector3 offset;
+    
+    private float xRotate, yRotate;
+    private Quaternion cameraQuaternion;
 
     void Start()
     {
@@ -20,7 +26,23 @@ public class PlayerCamera : MonoBehaviour
 
     void LateUpdate()
     {
+        scroll_wheel_movement = Input.GetAxis("Mouse ScrollWheel") * scroll_sensitivity;
+
         transform.position = player.transform.position + offset;
+
+        cameraQuaternion = Quaternion.Euler(0, xRotate, 0);
+        GameObject.Find("Player").transform.rotation = cameraQuaternion;
+        xRotate += Input.GetAxis("Mouse X") * look_sensitivity;
+        yRotate -= Input.GetAxis("Mouse Y") * look_sensitivity;
+        if (yRotate > 0)
+        {
+            yRotate = Mathf.Min(75, yRotate);
+        }
+        else
+        {
+            yRotate = Mathf.Max(-75, yRotate);
+        }
+        transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(yRotate, -75), 75), xRotate, 0);
     }
 
     void OnGUI()
@@ -41,8 +63,5 @@ public class PlayerCamera : MonoBehaviour
         GUILayout.Label("Mouse position: " + mousePos);
         GUILayout.Label("World position: " + point.ToString("F3"));
         GUILayout.EndArea();
-
-        Quaternion neededRotation = Quaternion.LookRotation(point - transform.position);
-        transform.rotation = Quaternion.Slerp(transform.rotation, neededRotation, Time.deltaTime * rotation_speed);
     }
 }

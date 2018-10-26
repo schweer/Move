@@ -61,6 +61,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\ExampleClass.cs" />
     <Compile Include="Assets\PlayerCamera.cs" />
     <Compile Include="Assets\PlayerController.cs" />
     <Reference Include="UnityEditor.StandardEvents">
