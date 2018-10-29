@@ -202,10 +202,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dbc8792fe3b254b448158bee7baa547e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 0}
-  player_camera: {fileID: 0}
-  offset: {x: 0, y: 0, z: 0}
-  sensitivity: 2
+  look_sensitivity: 2
+  scroll_sensitivity: 2
 --- !u!1 &511603768
 GameObject:
   m_ObjectHideFlags: 0
@@ -218,6 +216,7 @@ GameObject:
   - component: {fileID: 511603770}
   - component: {fileID: 511603773}
   - component: {fileID: 511603769}
+  - component: {fileID: 511603774}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -311,9 +310,22 @@ MonoBehaviour:
   speed: 6
   jump_speed: 8
   gravity: 20
-  move_direction: {x: 0, y: 0, z: 0}
-  player_camera: {fileID: 0}
-  controller: {fileID: 0}
+  forward_key: 119
+  back_key: 97
+  left_key: 115
+  right_key: 100
+  jump_key: 32
+--- !u!114 &511603774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 511603768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d67c9f38aed929545bb3f8eaf1dc25e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &747152937
 GameObject:
   m_ObjectHideFlags: 0
@@ -325,6 +337,7 @@ GameObject:
   - component: {fileID: 747152940}
   - component: {fileID: 747152939}
   - component: {fileID: 747152938}
+  - component: {fileID: 747152942}
   m_Layer: 0
   m_Name: Cylinder
   m_TagString: Untagged
@@ -400,6 +413,17 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &747152942
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 747152937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d67c9f38aed929545bb3f8eaf1dc25e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1305264222
 GameObject:
   m_ObjectHideFlags: 0
