@@ -6,12 +6,14 @@ public class PlayerCamera : MonoBehaviour
     private bool first_person = false;
     private float look_sensitivity = 2.0F;
     private float zoom_sensitivity = 1.0F;
+    private float max_look_angle;
+    private float min_look_angle;
 
     private GameObject player;
+    private Vector3 player_position;
     private Camera player_camera;
     private Vector3 default_camera_position; // Used for transitioning out of first person mode.
     private Vector3 third_person_position; // Keeps track of camera zoom.
-    private Vector3 heading;
     
     private float horizontal_input, vertical_input;
     private Quaternion camera_quaternion;
@@ -36,8 +38,8 @@ public class PlayerCamera : MonoBehaviour
 
     void Start()
     {
-        player = GameObject.Find("Player");
-        third_person_position = transform.position - player.transform.position;
+        player = GameObject.Find("PlayerController");
+        third_person_position = new Vector3(player_position.x, player_position.y, transform.position.z) - player_position;
     }
 
     void LateUpdate()
@@ -54,6 +56,8 @@ public class PlayerCamera : MonoBehaviour
         {
             vertical_input = Mathf.Max(-75, vertical_input);
         }
+
+        Debug.Log("horizontal_input, vertical_input: " + horizontal_input + ", " + vertical_input);
 
         if (first_person)
         {
