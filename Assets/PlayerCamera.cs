@@ -39,6 +39,7 @@ public class PlayerCamera : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("PlayerController");
+        player_position = player.transform.position;
         third_person_position = new Vector3(player_position.x, player_position.y, transform.position.z) - player_position;
     }
 
@@ -56,8 +57,6 @@ public class PlayerCamera : MonoBehaviour
         {
             vertical_input = Mathf.Max(-75, vertical_input);
         }
-
-        Debug.Log("horizontal_input, vertical_input: " + horizontal_input + ", " + vertical_input);
 
         if (first_person)
         {
