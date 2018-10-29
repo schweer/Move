@@ -4,9 +4,13 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    public float speed = 6.0F;
-    public float jump_speed = 8.0F;
-    public float gravity = 20.0F;
+    private float speed;
+    public float run_speed = 12.0F;
+    public float sprint_speed = 24.0f;
+    public float jump_speed = 12.0F;
+    public float gravity = 30.0F;
+
+    private bool sprinting = false;
 
     private Vector3 move_direction = Vector3.zero;
     private Camera player_camera;
@@ -16,6 +20,8 @@ public class PlayerController : MonoBehaviour
     public KeyCode back_key = KeyCode.A;
     public KeyCode left_key = KeyCode.S;
     public KeyCode right_key = KeyCode.D;
+    public KeyCode dash_key = KeyCode.LeftShift;
+    public KeyCode dash_lock_key = KeyCode.CapsLock;
     public KeyCode jump_key = KeyCode.Space;
 
     private void Start()
@@ -26,6 +32,19 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(dash_lock_key))
+        {
+            sprinting = !sprinting;
+        }
+
+        if (Input.GetKey(dash_key) || sprinting)
+        {
+            speed = sprint_speed;
+        }
+        else
+        {
+            speed = run_speed;
+        }
 
         if (Input.GetKey(forward_key))
         {

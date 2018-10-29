@@ -8,6 +8,7 @@ public class PlayerCamera : MonoBehaviour
     private float zoom_sensitivity = 1.0F;
 
     private GameObject player;
+    private Camera player_camera;
     private Vector3 default_camera_position; // Used for transitioning out of first person mode.
     private Vector3 third_person_position; // Keeps track of camera zoom.
     private Vector3 heading;
