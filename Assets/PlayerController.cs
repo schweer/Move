@@ -48,24 +48,24 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKey(forward_key))
         {
-            transform.position = transform.position + new Vector3(player_camera.transform.forward.x, 0, player_camera.transform.forward.z) * speed * Time.deltaTime;
+            transform.position += new Vector3(player_camera.transform.forward.x, 0, player_camera.transform.forward.z) * speed * Time.deltaTime;
         }
         if (Input.GetKey(back_key))
         {
-            transform.position = transform.position + new Vector3(-player_camera.transform.right.x, 0, -player_camera.transform.right.z) * speed * Time.deltaTime;
+            transform.position += new Vector3(-player_camera.transform.right.x, 0, -player_camera.transform.right.z) * speed * Time.deltaTime;
         }
         if (Input.GetKey(left_key))
         {
-            transform.position = transform.position + new Vector3(-player_camera.transform.forward.x, 0, -player_camera.transform.forward.z) * speed * Time.deltaTime;
+            transform.position += new Vector3(-player_camera.transform.forward.x, 0, -player_camera.transform.forward.z) * speed * Time.deltaTime;
         }
         if (Input.GetKey(right_key))
         {
-            transform.position = transform.position + new Vector3(player_camera.transform.right.x, 0, player_camera.transform.right.z) * speed * Time.deltaTime;
+            transform.position += new Vector3(player_camera.transform.right.x, 0, player_camera.transform.right.z) * speed * Time.deltaTime;
         }
 
         if (controller.isGrounded)
         {
-            if (Input.GetKey(jump_key))
+            if (Input.GetKey(jump_key) && controller.isGrounded)
             {
                 move_direction.y = jump_speed;
             }

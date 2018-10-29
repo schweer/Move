@@ -42,7 +42,7 @@ public class PlayerCamera : MonoBehaviour
 
     void LateUpdate()
     {
-        transform.position = player.transform.position + new Vector3(0, 2, 0);
+        transform.position = player.transform.position + new Vector3(0, 0.8F, 0);
 
         horizontal_input += Input.GetAxis("Mouse X") * look_sensitivity;
         vertical_input -= Input.GetAxis("Mouse Y") * look_sensitivity;
