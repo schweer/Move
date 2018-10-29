@@ -3,9 +3,9 @@ using System.Collections;
 
 public class PlayerCamera : MonoBehaviour
 {
-    public bool first_person = true;
-    public float look_sensitivity = 1.0F;
-    public float zoom_sensitivity = 1.0F;
+    private bool first_person = false;
+    private float look_sensitivity = 1.0F;
+    private float zoom_sensitivity = 1.0F;
 
     private GameObject player;
     private Vector3 default_camera_position; // Used for transitioning out of first person mode.
@@ -13,7 +13,25 @@ public class PlayerCamera : MonoBehaviour
     private Vector3 heading;
     
     private float horizontal_input, vertical_input;
-    private Quaternion cameraQuaternion;
+    private Quaternion camera_quaternion;
+
+    public bool firstPerson
+    {
+        get { return first_person; }
+        set { first_person = value; }
+    }
+
+    public float lookSensitivity
+    {
+        get { return look_sensitivity; }
+        set { look_sensitivity = value; }
+    }
+
+    public float zoomSensitivity
+    {
+        get { return zoom_sensitivity; }
+        set { zoom_sensitivity = value; }
+    }
 
     void Start()
     {
@@ -42,28 +60,11 @@ public class PlayerCamera : MonoBehaviour
             {
                 first_person = false;
             }
-
+            
             transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -75), 75), horizontal_input, 0);
         }
         else
         {
-            /*
-            // lerp for smooth movement
-            heading = player.transform.position - transform.position;
-            float axis = Input.GetAxis("Mouse ScrollWheel");
-            if (axis != 0)
-            {
-                if (heading.magnitude < 2)
-                {
-                    first_person = true;
-                }
-                else
-                {
-                    third_person_position += heading * axis * zoom_sensitivity;
-                }
-            }
-            */
-
             if (Input.GetAxis("Mouse ScrollWheel") > 0)
             {
                 first_person = true;
