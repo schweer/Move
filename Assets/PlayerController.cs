@@ -5,10 +5,10 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     private float speed;
-    public float run_speed = 12.0F;
-    public float sprint_speed = 24.0f;
-    public float jump_speed = 12.0F;
-    public float gravity = 30.0F;
+    private float run_speed = 12.0F;
+    private float sprint_speed = 18.0f;
+    private float jump_speed = 12.0F;
+    private float gravity = 30.0F;
 
     private bool sprinting = false;
 

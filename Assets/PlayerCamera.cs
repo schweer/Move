@@ -4,7 +4,7 @@ using System.Collections;
 public class PlayerCamera : MonoBehaviour
 {
     private bool first_person = false;
-    private float look_sensitivity = 1.0F;
+    private float look_sensitivity = 2.0F;
     private float zoom_sensitivity = 1.0F;
 
     private GameObject player;
