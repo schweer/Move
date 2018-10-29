@@ -9,8 +9,9 @@ public class PlayerCamera : MonoBehaviour
     private float max_look_angle;
     private float min_look_angle;
 
-    private GameObject player;
-    private Vector3 player_position;
+    private GameObject first_person_object;
+    private GameObject third_person_object;
+    private Vector3 third_person_object_position;
     private Camera player_camera;
     private Vector3 default_camera_position; // Used for transitioning out of first person mode.
     private Vector3 third_person_position; // Keeps track of camera zoom.
@@ -38,15 +39,14 @@ public class PlayerCamera : MonoBehaviour
 
     void Start()
     {
-        player = GameObject.Find("PlayerController");
-        player_position = player.transform.position;
-        third_person_position = new Vector3(player_position.x, player_position.y, transform.position.z) - player_position;
+        first_person_object = GameObject.Find("PlayerController");
+        third_person_object = GameObject.Find("PlayerController");
+        third_person_object_position = first_person_object.transform.position;
+        third_person_position = new Vector3(third_person_object_position.x, third_person_object_position.y, transform.position.z) - third_person_object_position;
     }
 
     void LateUpdate()
     {
-        transform.position = player.transform.position + new Vector3(0, 0.8F, 0);
-
         horizontal_input += Input.GetAxis("Mouse X") * look_sensitivity;
         vertical_input -= Input.GetAxis("Mouse Y") * look_sensitivity;
         if (vertical_input > 0)
@@ -60,6 +60,8 @@ public class PlayerCamera : MonoBehaviour
 
         if (first_person)
         {
+            transform.position = first_person_object.transform.position + new Vector3(0, 0.8F, 0);
+
             if (Input.GetAxis("Mouse ScrollWheel") < 0)
             {
                 first_person = false;
@@ -74,11 +76,11 @@ public class PlayerCamera : MonoBehaviour
                 first_person = true;
             }
 
-            player.transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -75), 75), horizontal_input, 0);
+            third_person_object.transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -75), 75), horizontal_input, 0);
 
-            transform.position = player.transform.position + (player.transform.rotation * third_person_position);
+            transform.position = third_person_object.transform.position + (third_person_object.transform.rotation * third_person_position);
 
-            transform.LookAt(player.transform);
+            transform.LookAt(third_person_object.transform);
         }
     }
 }
