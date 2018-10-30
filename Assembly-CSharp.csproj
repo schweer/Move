@@ -61,9 +61,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\ExampleClass.cs" />
-    <Compile Include="Assets\PlayerCamera.cs" />
-    <Compile Include="Assets\PlayerController.cs" />
+    <Compile Include="Assets\Scripts\PlayerCamera.cs" />
+    <Compile Include="Assets\Scripts\PlayerController.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/Caleb/Games/Move/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>
