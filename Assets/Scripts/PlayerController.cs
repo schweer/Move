@@ -7,17 +7,20 @@ public class PlayerController : MonoBehaviour
 {
     public float current_speed_x = 0.0f;
     public float current_speed_z = 0.0f;
+    public float ground_acceleration = 100.0f;
+    public float aerial_acceleration = 50.0f;
     public float acceleration = 100.0f;
-    public float max_speed = 30.0f;
-    public float jump_speed = 8.0f;
-    public float gravity = 20.0f;
+    public float max_speed = 20.0f;
+    public float jump_speed = 20.0f;
+    public float gravity = 80.0f;
+    public float dash_distance = 20.0f;
+    public Vector3 drag = new Vector3(0.2f, 0.2f, 0.2f);
 
     private Vector3 move_direction = Vector3.zero;
     private CharacterController controller;
     private float horizontal_input, vertical_input;
-
-    private KeyCode left_key = KeyCode.A;
-    private KeyCode right_key = KeyCode.D;
+    
+    private KeyCode dash_key = KeyCode.Mouse1;
 
     void Start()
     {
@@ -27,6 +30,15 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        if (controller.isGrounded)
+        {
+            acceleration = ground_acceleration;
+        }
+        else
+        {
+            acceleration = aerial_acceleration;
+        }
+
         horizontal_input = Input.GetAxis("Horizontal");
         vertical_input = Input.GetAxis("Vertical");
 
@@ -58,13 +70,46 @@ public class PlayerController : MonoBehaviour
         move_direction.x = current_speed_x;
         move_direction.z = current_speed_z;
 
-        if (Input.GetButton("Jump") && controller.isGrounded)
+        /*
+        if (Input.GetKey(dash_key) && move_direction.x > 0)
+        {
+            move_direction.x += dash_distance;
+        }
+        if (Input.GetKey(dash_key) && move_direction.x < 0)
+        {
+            move_direction.x -= dash_distance;
+        }
+        if (Input.GetKey(dash_key) && move_direction.z > 0)
+        {
+            move_direction.z += dash_distance;
+        }
+        if (Input.GetKey(dash_key) && move_direction.z < 0)
+        {
+            move_direction.z -= dash_distance;
+        }
+        */
+
+        if (controller.isGrounded && move_direction.y < 0)
+        {
+            move_direction.y = 0f; // Keeps alternating between grounded and not grounded
+        }
+
+        if (controller.isGrounded && Input.GetButton("Jump"))
         {
             move_direction.y = jump_speed;
         }
 
-        move_direction.y -= (gravity * Time.deltaTime);
-        
+        if (!controller.isGrounded)
+        {
+            move_direction.y -= (gravity * Time.deltaTime);
+        }
+
+        //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
+        //Debug.Log("grounded: " + controller.isGrounded + " magnitude: " + move_direction.magnitude);
         controller.Move(move_direction * Time.deltaTime);
+
+        move_direction.x /= 1 + drag.x * Time.deltaTime;
+        move_direction.y /= 1 + drag.y * Time.deltaTime;
+        move_direction.z /= 1 + drag.z * Time.deltaTime;
     }
 }
