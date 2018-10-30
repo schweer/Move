@@ -185,7 +185,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 176904144}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.1, y: 1.83, z: -5.99}
+  m_LocalPosition: {x: -0.1, y: 2.14, z: -4.59}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -212,7 +212,7 @@ GameObject:
   - component: {fileID: 429223212}
   - component: {fileID: 429223211}
   - component: {fileID: 429223210}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: Terrain
   m_TagString: Floor
   m_Icon: {fileID: 0}
@@ -283,9 +283,10 @@ GameObject:
   m_Component:
   - component: {fileID: 511603772}
   - component: {fileID: 511603771}
-  - component: {fileID: 511603769}
   - component: {fileID: 511603773}
   - component: {fileID: 511603770}
+  - component: {fileID: 511603769}
+  - component: {fileID: 511603774}
   m_Layer: 0
   m_Name: PlayerController
   m_TagString: Player
@@ -293,23 +294,21 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!143 &511603769
-CharacterController:
+--- !u!54 &511603769
+Rigidbody:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 511603768}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
   serializedVersion: 2
-  m_Height: 2
-  m_Radius: 0.5
-  m_SlopeLimit: 45
-  m_StepOffset: 0.3
-  m_SkinWidth: 0.08
-  m_MinMoveDistance: 0.001
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Mass: 1
+  m_Drag: 0
+  m_AngularDrag: 0.05
+  m_UseGravity: 1
+  m_IsKinematic: 0
+  m_Interpolate: 0
+  m_Constraints: 0
+  m_CollisionDetection: 0
 --- !u!23 &511603770
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -359,7 +358,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 511603768}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 6.61, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -376,6 +375,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 514c00d71bdf9dd47a3563002695332d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!136 &511603774
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 511603768}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  m_Radius: 0.5
+  m_Height: 2
+  m_Direction: 1
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!1 &747152937
 GameObject:
   m_ObjectHideFlags: 0

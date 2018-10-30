@@ -10,9 +10,11 @@ public class PlayerController : MonoBehaviour
     private float gravity = 10.0F;
 
     private LayerMask ground_layer;
+    private float distance_to_ground;
     
     private Camera player_camera;
     private Rigidbody rigid_body;
+    private Collider player_collider;
     
     private KeyCode forward_key = KeyCode.W;
     private KeyCode back_key = KeyCode.A;
@@ -29,6 +31,8 @@ public class PlayerController : MonoBehaviour
         ground_layer = LayerMask.NameToLayer("Ground");
         player_camera = GameObject.Find("PlayerCamera").GetComponent<Camera>();
         rigid_body = GetComponent<Rigidbody>();
+        player_collider = GetComponent<Collider>();
+        distance_to_ground = player_collider.bounds.extents.y;
        // Cursor.lockState = CursorLockMode.Locked;
     }
 
@@ -66,6 +70,6 @@ public class PlayerController : MonoBehaviour
 
     public bool IsGrounded()
     {
-        return Physics.Raycast(transform.position, Vector3.down, 1.0F, ~ground_layer);
+        return Physics.Raycast(transform.position, Vector3.down, distance_to_ground, ~ground_layer);
     }
 }
