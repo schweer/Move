@@ -1,9 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-// The GameObject is made to bounce using the space key.
-// Also the GameOject can be moved forward/backward and left/right.
-// Add a Quad to the scene so this GameObject can collider with a floor.
+//test
 
 public class PlayerController : MonoBehaviour
 {
@@ -25,6 +23,7 @@ public class PlayerController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
     }
+
 
     void Update()
     {
