@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     private float sprint_speed = 18.0f;
     private float dash_distance = 5.0F;
     private float jump_speed = 12.0F;
+    private float acceleration = 2.0F;
     private float gravity = 30.0F;
 
     private bool sprinting = false;
@@ -73,17 +74,14 @@ public class PlayerController : MonoBehaviour
             transform.position += new Vector3(player_camera.transform.right.x, 0, player_camera.transform.right.z) * speed * Time.deltaTime;
         }
 
-        if (controller.isGrounded)
+        if (Input.GetKeyDown(dash_key) && Input.GetKey(forward_key) && controller.isGrounded)
         {
-            if (Input.GetKeyDown(dash_key) && Input.GetKey(forward_key))
-            {
-                Vector3.Lerp(transform.position, transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * dash_distance, t);
-            }
+            Vector3.Lerp(transform.position, transform.position += new Vector3(transform.forward.x, 0, transform.forward.z) * dash_distance, t);
+        }
 
-            if (Input.GetKey(jump_key) && controller.isGrounded)
-            {
-                move_direction.y = jump_speed;
-            }
+        if (Input.GetKey(jump_key) && controller.isGrounded)
+        {
+            move_direction.y = jump_speed;
         }
 
         move_direction.y -= gravity * Time.deltaTime;
