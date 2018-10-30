@@ -3,7 +3,7 @@ using System.Collections;
 
 public class PlayerCamera : MonoBehaviour
 {
-    private bool first_person = false;
+    private bool first_person = true;
     private float look_sensitivity = 2.0F;
     private float zoom_sensitivity = 1.0F;
     private float max_look_angle;
@@ -60,13 +60,13 @@ public class PlayerCamera : MonoBehaviour
 
         if (first_person)
         {
-            transform.position = first_person_object.transform.position + new Vector3(0, 0.8F, 0);
-
+            transform.position = first_person_object.transform.position + third_person_position;
+            /*
             if (Input.GetAxis("Mouse ScrollWheel") < 0)
             {
                 first_person = false;
             }
-            
+            */
             transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -75), 75), horizontal_input, 0);
         }
         else
