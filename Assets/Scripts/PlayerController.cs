@@ -11,8 +11,8 @@ public class PlayerController : MonoBehaviour
     public float aerial_acceleration = 50.0f;
     public float acceleration = 100.0f;
     public float max_speed = 20.0f;
-    public float jump_speed = 20.0f;
-    public float gravity = 80.0f;
+    public float jump_speed = 10.0f;
+    public float gravity = 30.0f;
     public float dash_distance = 20.0f;
     public Vector3 drag = new Vector3(0.2f, 0.2f, 0.2f);
     public float look_sensitivity = 2.0F;
@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     private LayerMask ground_layer;
     private RaycastHit ground_ray;
     private bool grounded;
+    private float airtime;
     
     private KeyCode dash_key = KeyCode.Mouse1;
 
@@ -35,9 +36,9 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        Debug.DrawRay(transform.position, Vector3.down * controller.bounds.extents.y * 1.1f, Color.red, 1.0f);
+        RunDebuggers();
+        
         grounded = Physics.Raycast(transform.position, Vector3.down, out ground_ray, controller.bounds.extents.y * 1.1f);
-        Debug.Log("grounded: " + grounded);
 
         if (Input.GetKey(KeyCode.Escape))
         {
@@ -133,9 +134,7 @@ public class PlayerController : MonoBehaviour
         {
             move_direction.y -= (gravity * Time.deltaTime);
         }
-
-        //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
-        Debug.Log("grounded: " + grounded + " magnitude: " + move_direction.magnitude);
+        
         controller.Move(move_direction * Time.deltaTime);
 
         /*
@@ -149,5 +148,28 @@ public class PlayerController : MonoBehaviour
     {
         look_input += Input.GetAxis("Mouse X") * look_sensitivity;
         transform.rotation = Quaternion.Euler(0, look_input, 0);
+    }
+
+    private void RunDebuggers()
+    {
+        //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
+        //Debug.Log("grounded: " + grounded + " magnitude: " + move_direction.magnitude);
+
+        // draw ground_ray
+        //Debug.DrawRay(transform.position, Vector3.down * controller.bounds.extents.y * 1.1f, Color.red, 1.0f);
+
+        // airtime
+        if (!grounded)
+        {
+            airtime++;
+        }
+        if (grounded)
+        {
+            if (airtime > 0)
+            {
+                Debug.Log("airtime: " + airtime);
+                airtime = 0;
+            }
+        }
     }
 }

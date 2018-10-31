@@ -14,8 +14,8 @@ public class PlayerCamera : MonoBehaviour
     void Start()
     {
         look_object = GameObject.Find("PlayerController");
-        offset = transform.position - look_object.transform.position;
-        //offfset = look_object.transform.position;
+        //offset = transform.position - look_object.transform.position;
+        offset = new Vector3(0, 1, 0);
     }
 
     void LateUpdate()
