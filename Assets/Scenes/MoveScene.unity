@@ -469,8 +469,11 @@ MonoBehaviour:
   aerial_acceleration: 50
   acceleration: 100
   max_speed: 20
-  jump_speed: 30
+  jump_speed: 20
   gravity: 80
+  dash_distance: 20
+  drag: {x: 0.2, y: 0.2, z: 0.2}
+  look_sensitivity: 2
 --- !u!1 &747152937
 GameObject:
   m_ObjectHideFlags: 0
