@@ -20,24 +20,31 @@ public class PlayerController : MonoBehaviour
     private Vector3 move_direction = Vector3.zero;
     private CharacterController controller;
     private float horizontal_input, vertical_input, look_input;
+    private LayerMask ground_layer;
+    private RaycastHit ground_ray;
+    private bool grounded;
     
     private KeyCode dash_key = KeyCode.Mouse1;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        ground_layer = LayerMask.NameToLayer("Ground");
         Cursor.lockState = CursorLockMode.Locked;
     }
 
-
     void Update()
     {
+        Debug.DrawRay(transform.position, Vector3.down * controller.bounds.extents.y * 1.1f, Color.red, 1.0f);
+        grounded = Physics.Raycast(transform.position, Vector3.down, out ground_ray, controller.bounds.extents.y * 1.1f);
+        Debug.Log("grounded: " + grounded);
+
         if (Input.GetKey(KeyCode.Escape))
         {
             Cursor.lockState = CursorLockMode.None;
         }
 
-        if (controller.isGrounded)
+        if (grounded)
         {
             acceleration = ground_acceleration;
         }
@@ -112,23 +119,23 @@ public class PlayerController : MonoBehaviour
         }
         */
 
-        if (controller.isGrounded && move_direction.y < 0)
+        if (grounded && move_direction.y < 0)
         {
             move_direction.y = 0f; // Keeps alternating between grounded and not grounded
         }
 
-        if (controller.isGrounded && Input.GetButton("Jump"))
+        if (grounded && Input.GetButton("Jump"))
         {
             move_direction.y = jump_speed;
         }
 
-        if (!controller.isGrounded)
+        if (!grounded)
         {
             move_direction.y -= (gravity * Time.deltaTime);
         }
 
         //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
-        Debug.Log("grounded: " + controller.isGrounded + " magnitude: " + move_direction.magnitude);
+        Debug.Log("grounded: " + grounded + " magnitude: " + move_direction.magnitude);
         controller.Move(move_direction * Time.deltaTime);
 
         /*
