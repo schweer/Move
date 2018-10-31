@@ -15,21 +15,28 @@ public class PlayerController : MonoBehaviour
     public float gravity = 80.0f;
     public float dash_distance = 20.0f;
     public Vector3 drag = new Vector3(0.2f, 0.2f, 0.2f);
+    public float look_sensitivity = 2.0F;
 
     private Vector3 move_direction = Vector3.zero;
     private CharacterController controller;
-    private float horizontal_input, vertical_input;
+    private float horizontal_input, vertical_input, look_input;
     
     private KeyCode dash_key = KeyCode.Mouse1;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
 
     void Update()
     {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
         if (controller.isGrounded)
         {
             acceleration = ground_acceleration;
@@ -42,33 +49,49 @@ public class PlayerController : MonoBehaviour
         horizontal_input = Input.GetAxis("Horizontal");
         vertical_input = Input.GetAxis("Vertical");
 
+        /*
+        move_direction.x = (transform.right.x * horizontal_input * acceleration) + (transform.forward.x * vertical_input * acceleration);
+        move_direction.z = (transform.right.z * horizontal_input * acceleration) + (transform.forward.z * vertical_input * acceleration);
+        */
+
         if (horizontal_input > 0)
         {
             current_speed_x = Mathf.Min(horizontal_input * acceleration, max_speed);
+            //move_direction.x = transform.right.x * horizontal_input * acceleration;
         }
         if (vertical_input > 0)
         {
             current_speed_z = Mathf.Min(vertical_input * acceleration, max_speed);
+            //move_direction.z = transform.forward.z * vertical_input * acceleration;
         }
         if (horizontal_input < 0)
         {
             current_speed_x = Mathf.Max(horizontal_input * acceleration, -max_speed);
+            //move_direction.x = transform.right.x * horizontal_input * acceleration;
         }
         if (vertical_input < 0)
         {
             current_speed_z = Mathf.Max(vertical_input * acceleration, -max_speed);
+            //move_direction.z = transform.forward.z * vertical_input * acceleration;
         }
         if (horizontal_input == 0)
         {
             current_speed_x = horizontal_input;
+            //move_direction.x = transform.right.x * horizontal_input * acceleration;
         }
         if (vertical_input == 0)
         {
             current_speed_z = vertical_input;
+            //move_direction.z = transform.forward.z * vertical_input * acceleration;
         }
 
+        move_direction.x = (transform.right.x * current_speed_x) + (transform.forward.x * current_speed_z);
+        move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
+
+        /*
         move_direction.x = current_speed_x;
         move_direction.z = current_speed_z;
+        */
 
         /*
         if (Input.GetKey(dash_key) && move_direction.x > 0)
@@ -105,11 +128,19 @@ public class PlayerController : MonoBehaviour
         }
 
         //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
-        //Debug.Log("grounded: " + controller.isGrounded + " magnitude: " + move_direction.magnitude);
+        Debug.Log("grounded: " + controller.isGrounded + " magnitude: " + move_direction.magnitude);
         controller.Move(move_direction * Time.deltaTime);
 
+        /*
         move_direction.x /= 1 + drag.x * Time.deltaTime;
         move_direction.y /= 1 + drag.y * Time.deltaTime;
         move_direction.z /= 1 + drag.z * Time.deltaTime;
+        */
+    }
+
+    private void LateUpdate()
+    {
+        look_input += Input.GetAxis("Mouse X") * look_sensitivity;
+        transform.rotation = Quaternion.Euler(0, look_input, 0);
     }
 }
