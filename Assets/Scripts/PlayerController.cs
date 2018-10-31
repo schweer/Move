@@ -8,7 +8,7 @@ public class PlayerController : MonoBehaviour
     public float current_speed_x = 0.0f;
     public float current_speed_z = 0.0f;
     public float ground_acceleration = 100.0f;
-    public float aerial_acceleration = 50.0f;
+    public float aerial_acceleration = 100.0f;
     public float acceleration = 100.0f;
     public float max_speed = 20.0f;
     public float jump_speed = 10.0f;
@@ -21,9 +21,11 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
     private float horizontal_input, vertical_input, look_input;
     private LayerMask ground_layer;
-    private RaycastHit ground_ray;
+    private Ray ground_ray;
+    private RaycastHit ground_ray_hit;
     private bool grounded;
     private float airtime;
+    private float angle;
     
     private KeyCode dash_key = KeyCode.Mouse1;
 
@@ -31,14 +33,20 @@ public class PlayerController : MonoBehaviour
     {
         controller = GetComponent<CharacterController>();
         ground_layer = LayerMask.NameToLayer("Ground");
+        ground_ray.direction = Vector3.down;
         Cursor.lockState = CursorLockMode.Locked;
     }
-
+    
     void Update()
     {
         RunDebuggers();
-        
-        grounded = Physics.Raycast(transform.position, Vector3.down, out ground_ray, controller.bounds.extents.y * 1.1f);
+
+        ground_ray.origin = transform.position;
+            
+        grounded = Physics.Raycast(ground_ray, out ground_ray_hit, controller.bounds.extents.y * 1.1f); // ground check
+        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity); // ground angle check
+
+        angle = Vector3.Angle(ground_ray_hit.normal, -transform.up) - 180;
 
         if (Input.GetKey(KeyCode.Escape))
         {
@@ -125,12 +133,12 @@ public class PlayerController : MonoBehaviour
             move_direction.y = 0f; // Keeps alternating between grounded and not grounded
         }
 
-        if (grounded && Input.GetButton("Jump"))
+        if ((grounded || controller.isGrounded) && Input.GetButton("Jump"))
         {
             move_direction.y = jump_speed;
         }
 
-        if (!grounded)
+        if (!grounded || controller.isGrounded)
         {
             move_direction.y -= (gravity * Time.deltaTime);
         }
@@ -153,11 +161,12 @@ public class PlayerController : MonoBehaviour
     private void RunDebuggers()
     {
         //Debug.Log("move_direction.x, move_direction.z: " + move_direction.x + ", " + move_direction.z);
-        //Debug.Log("grounded: " + grounded + " magnitude: " + move_direction.magnitude);
+        Debug.Log("grounded: " + grounded + " isGrounded: " + controller.isGrounded + " angle: " + angle + " magnitude: " + move_direction.magnitude);
 
         // draw ground_ray
         //Debug.DrawRay(transform.position, Vector3.down * controller.bounds.extents.y * 1.1f, Color.red, 1.0f);
-
+        
+        /*
         // airtime
         if (!grounded)
         {
@@ -171,5 +180,6 @@ public class PlayerController : MonoBehaviour
                 airtime = 0;
             }
         }
+        */
     }
 }
