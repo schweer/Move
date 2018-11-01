@@ -61,9 +61,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\LineOfSight.cs" />
     <Compile Include="Assets\Scripts\FirstPersonCamera.cs" />
+    <Compile Include="Assets\Scripts\LineOfSight.cs" />
     <Compile Include="Assets\Scripts\PlayerControllerAlpha.cs" />
+    <Compile Include="Assets\Scripts\PlayerControllerBeta.cs" />
     <Reference Include="UnityEditor.StandardEvents">
       <HintPath>C:/Users/Caleb/Games/Move/Library/ScriptAssemblies/UnityEditor.StandardEvents.dll</HintPath>
     </Reference>

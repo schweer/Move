@@ -1,7 +1,7 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿// Moves around pretty well, but trying to cling to slopes with two grounded bools is dumb.
 
-//test
+using UnityEngine;
+using System.Collections;
 
 public class PlayerControllerAlpha : MonoBehaviour
 {
