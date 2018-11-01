@@ -9,8 +9,9 @@ public class PlayerControllerBeta : MonoBehaviour {
     private float horizontal_input, vertical_input;
     private float current_speed_x, current_speed_z;
     private float acceleration = 100;
-    private float max_speed = 15;
+    private float max_speed = 10;
     private float gravity = 30;
+    private float step_height = 0.5f;
 
     Vector3 move_direction;
     Ray ground_ray;
@@ -66,15 +67,15 @@ public class PlayerControllerBeta : MonoBehaviour {
         }
 
         move_direction.x = (ground_angle.right.x * current_speed_x) + (ground_angle.forward.x * current_speed_z);
-        if(controller.isGrounded || (angle != 0 && Vector3.Distance(transform.position, ground_ray_hit.point) < 0.5f)) move_direction.y = (ground_angle.right.y * current_speed_x) + (ground_angle.forward.y * current_speed_z);
+        if(controller.isGrounded || (angle != 0 && Vector3.Distance(transform.position, ground_ray_hit.point) <= step_height)) move_direction.y = (ground_angle.right.y * current_speed_x) + (ground_angle.forward.y * current_speed_z);
         move_direction.z = (ground_angle.right.z * current_speed_x) + (ground_angle.forward.z * current_speed_z);
         
         if (controller.isGrounded)
         {
-            move_direction.y = -0.1f;
+            move_direction.y = -0.5f;
         }
 
-        if (!controller.isGrounded && Vector3.Distance(transform.position, ground_ray_hit.point) > 0.5f)
+        if (!controller.isGrounded && Vector3.Distance(transform.position, ground_ray_hit.point) > step_height)
         {
             move_direction.y -= gravity * Time.deltaTime;
         }
