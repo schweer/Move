@@ -32,8 +32,8 @@ public class PlayerControllerBeta : MonoBehaviour {
     private void Update()
     {
         ground_ray.origin = transform.position;
-        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
-        //Physics.SphereCast(ground_ray, 0.2f, out ground_ray_hit, Mathf.Infinity); // Mess with this if character models are too wide for gaps they move in.
+        //Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity); // 
+        Physics.SphereCast(ground_ray, 0.5f, out ground_ray_hit, Mathf.Infinity); // Holds on to steep angles better.
         angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
 
         ground_angle.rotation = Quaternion.FromToRotation(Vector3.up, ground_ray_hit.normal) * transform.rotation;
