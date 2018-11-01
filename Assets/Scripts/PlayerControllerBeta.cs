@@ -9,7 +9,7 @@ public class PlayerControllerBeta : MonoBehaviour {
     private float horizontal_input, vertical_input;
     private float current_speed_x, current_speed_z;
     private float acceleration = 100;
-    private float max_speed = 10;
+    private float max_speed = 8;
     private float gravity = 30;
     private float step_height = 0.5f;
 
