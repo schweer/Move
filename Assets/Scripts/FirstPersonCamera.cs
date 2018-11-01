@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class PlayerCamera : MonoBehaviour
+public class FirstPersonCamera : MonoBehaviour
 {
     private float look_sensitivity = 2.0F;
     private float max_look_angle = 75;
