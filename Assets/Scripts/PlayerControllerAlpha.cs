@@ -20,19 +20,19 @@ public class PlayerControllerAlpha : MonoBehaviour
     private Vector3 move_direction = Vector3.zero;
     private CharacterController controller;
     private float horizontal_input, vertical_input, look_input;
-    private LayerMask ground_layer;
-    private Ray ground_ray;
+    //private LayerMask ground_layer;
+    private Ray ground_ray = new Ray();
     private RaycastHit ground_ray_hit;
     private bool grounded;
     private float airtime;
     private float angle;
     
-    private KeyCode dash_key = KeyCode.Mouse1;
+    //private KeyCode dash_key = KeyCode.Mouse1;
 
     void Start()
     {
         controller = GetComponent<CharacterController>();
-        ground_layer = LayerMask.NameToLayer("Ground");
+        //ground_layer = LayerMask.NameToLayer("Ground");
         ground_ray.direction = Vector3.down;
         Cursor.lockState = CursorLockMode.Locked;
     }
