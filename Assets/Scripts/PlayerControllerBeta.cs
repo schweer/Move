@@ -20,7 +20,7 @@ public class PlayerControllerBeta : MonoBehaviour {
     // Parameters
     private float on_slope_height = 0.45f;
     private float ground_distance;
-    private float angle;
+    private float ground_angle;
     private float slope_distance;
 
     // Physics
@@ -47,44 +47,19 @@ public class PlayerControllerBeta : MonoBehaviour {
     {
         ground_ray.origin = transform.position;
         Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
-        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
-
-        angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
-        
         ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
+        ground_angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
+        
+        slope_transform.rotation = Quaternion.FromToRotation(Vector3.up, ground_ray_hit.normal) * transform.rotation; // Rotate slope ray based on angle beneath player
 
-        slope_transform.rotation = Quaternion.FromToRotation(Vector3.up, ground_ray_hit.normal) * transform.rotation;
         slope_ray.origin = slope_transform.position;
         slope_ray.direction = -slope_transform.up;
+        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
 
-        horizontal_input = Input.GetAxis("Horizontal");
-        vertical_input = Input.GetAxis("Vertical");
-
-        if (horizontal_input > 0)
-        {
-            current_speed_x = Mathf.Min(horizontal_input * acceleration, max_speed);
-        }
-        if (vertical_input > 0)
-        {
-            current_speed_z = Mathf.Min(vertical_input * acceleration, max_speed);
-        }
-        if (horizontal_input < 0)
-        {
-            current_speed_x = Mathf.Max(horizontal_input * acceleration, -max_speed);
-        }
-        if (vertical_input < 0)
-        {
-            current_speed_z = Mathf.Max(vertical_input * acceleration, -max_speed);
-        }
-        if (horizontal_input == 0)
-        {
-            current_speed_x = horizontal_input;
-        }
-        if (vertical_input == 0)
-        {
-            current_speed_z = vertical_input;
-        }
+        current_speed_x = HorizontalInput();
+        current_speed_z = VerticalInput();
+        //Debug.Log("current_speed_x: " + current_speed_x + " HorizontalInput(): " + HorizontalInput() + " current_speed_z: " + current_speed_z + " VerticalInput(): " + VerticalInput());
 
         if (OnSlope() || controller.isGrounded)
         {
@@ -104,7 +79,7 @@ public class PlayerControllerBeta : MonoBehaviour {
             move_direction.y = -5f;
         }
 
-        if (current_speed_x <= max_speed && current_speed_z <= max_speed && angle != 0 && OnSlope())
+        if (current_speed_x <= max_speed && current_speed_z <= max_speed && ground_angle != 0 && OnSlope())
         {
             move_direction.y = -slope_force;
         }
@@ -119,7 +94,7 @@ public class PlayerControllerBeta : MonoBehaviour {
             move_direction.y -= gravity * Time.deltaTime;
         }
         
-        Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
+        //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
         Debug.DrawRay(slope_transform.position, slope_transform.up, Color.green, 2);
         Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
@@ -135,7 +110,7 @@ public class PlayerControllerBeta : MonoBehaviour {
 
     private bool OnSlope()
     {
-        if (angle != 0 && slope_distance <= on_slope_height)
+        if (ground_angle != 0 && slope_distance <= on_slope_height)
         {
             return true;
         }
@@ -154,6 +129,41 @@ public class PlayerControllerBeta : MonoBehaviour {
         else
         {
             return false;
+        }
+    }
+
+    private float HorizontalInput()
+    {
+        horizontal_input = Input.GetAxis("Horizontal");
+        
+        if (horizontal_input > 0)
+        {
+            return Mathf.Min(horizontal_input * acceleration, max_speed);
+        }
+        if (horizontal_input < 0)
+        {
+            return Mathf.Max(horizontal_input * acceleration, -max_speed);
+        }
+        else
+        {
+            return horizontal_input;
+        }
+    }
+    private float VerticalInput()
+    {
+        vertical_input = Input.GetAxis("Vertical");
+
+        if (vertical_input > 0)
+        {
+            return Mathf.Min(vertical_input * acceleration, max_speed);
+        }
+        if (vertical_input < 0)
+        {
+            return Mathf.Max(vertical_input * acceleration, -max_speed);
+        }
+        else
+        {
+            return vertical_input;
         }
     }
 }
