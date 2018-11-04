@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float acceleration = 10.0f;
+    private float acceleration = 20.0f;
     private float max_run_speed = 8.0f;
     private float gravity = 30.0f;
     private float slope_force = 25.0f;
@@ -35,6 +35,7 @@ public class PlayerControllerBeta : MonoBehaviour
     CharacterController controller;
     Transform slope_transform;
 
+    Vector3 direction;
     float angle;
 
 	private void Start ()
@@ -48,6 +49,10 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void Update()
     {
+        direction = transform.position - ground_ray.origin;
+        direction.y = 0.0f;
+        //Debug.Log("direction: " + direction);
+
         ground_ray.origin = transform.position;
         Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
         ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
@@ -59,8 +64,8 @@ public class PlayerControllerBeta : MonoBehaviour
         slope_ray.direction = -slope_transform.up;
         Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
-
-        angle = Vector3.SignedAngle(transform.forward, slope_transform.forward, -transform.right);
+        
+        angle = Vector3.SignedAngle(direction, slope_transform.forward, -transform.right);
         Debug.Log("angle: " + angle);
 
         if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
@@ -74,7 +79,6 @@ public class PlayerControllerBeta : MonoBehaviour
 
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
-
         //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
 
         if (OnSlope() || controller.isGrounded)
