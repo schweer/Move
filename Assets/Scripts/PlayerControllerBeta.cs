@@ -79,20 +79,17 @@ public class PlayerControllerBeta : MonoBehaviour {
             move_direction.y = -5f;
         }
 
-        if (current_speed_x <= max_speed && current_speed_z <= max_speed && ground_angle != 0 && OnSlope())
+        if (current_speed_x <= max_speed && current_speed_z <= max_speed && OnSlope())
         {
             move_direction.y = -slope_force;
         }
 
         if (IsJumping())
         {
-            move_direction.y = Mathf.Sqrt(2 * jump_height * gravity);
+            move_direction.y = Jump();
         }
 
-        if (!controller.isGrounded)
-        {
-            move_direction.y -= gravity * Time.deltaTime;
-        }
+        move_direction.y -= Gravity();
         
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
@@ -120,6 +117,18 @@ public class PlayerControllerBeta : MonoBehaviour {
         }
     }
 
+    private float Gravity()
+    {
+        if (!controller.isGrounded)
+        {
+            return gravity * Time.deltaTime;
+        }
+        else
+        {
+            return 0.0f;
+        }
+    }
+
     private bool IsJumping()
     {
         if ((OnSlope() || controller.isGrounded) && Input.GetKey(KeyCode.Space))
@@ -130,6 +139,11 @@ public class PlayerControllerBeta : MonoBehaviour {
         {
             return false;
         }
+    }
+
+    private float Jump()
+    {
+        return Mathf.Sqrt(2 * jump_height * gravity);
     }
 
     private float HorizontalInput()
