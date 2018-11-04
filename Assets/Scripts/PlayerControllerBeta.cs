@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerControllerBeta : MonoBehaviour {
-
+public class PlayerControllerBeta : MonoBehaviour
+{
     // Attributes
     private float acceleration = 100.0f;
     private float max_speed = 8.0f;
