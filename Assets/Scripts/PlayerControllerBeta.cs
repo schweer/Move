@@ -5,17 +5,18 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float acceleration = 100.0f;
-    private float max_speed = 8.0f;
+    private float acceleration = 10.0f;
+    private float max_run_speed = 8.0f;
     private float gravity = 30.0f;
     private float slope_force = 25.0f;
-    private float jump_height = 2.0f;
+    private float jump_height = 2.5f;
+    private float look_sensitivity = 2.0f;
 
     // Input
     private float look_input;
-    private float look_sensitivity = 2.0f;
     private float horizontal_input, vertical_input;
     private float current_speed_x, current_speed_z;
+    private float max_speed;
 
     // Parameters
     private float on_slope_height = 0.45f;
@@ -33,6 +34,8 @@ public class PlayerControllerBeta : MonoBehaviour
     // Components
     CharacterController controller;
     Transform slope_transform;
+
+    float angle;
 
 	private void Start ()
     {
@@ -57,9 +60,22 @@ public class PlayerControllerBeta : MonoBehaviour
         Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
 
+        angle = Vector3.SignedAngle(transform.forward, slope_transform.forward, -transform.right);
+        Debug.Log("angle: " + angle);
+
+        if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
+        {
+            max_speed = Mathf.Infinity;
+        }
+        else
+        {
+            max_speed = max_run_speed;
+        }
+
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
-        //Debug.Log("current_speed_x: " + current_speed_x + " HorizontalInput(): " + HorizontalInput() + " current_speed_z: " + current_speed_z + " VerticalInput(): " + VerticalInput());
+
+        //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
 
         if (OnSlope() || controller.isGrounded)
         {
@@ -90,8 +106,9 @@ public class PlayerControllerBeta : MonoBehaviour
         }
 
         move_direction.y -= Gravity();
-        
+
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
+        //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
         Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
         Debug.DrawRay(slope_transform.position, slope_transform.up, Color.green, 2);
         Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
@@ -119,7 +136,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private float Gravity()
     {
-        if (!controller.isGrounded)
+        if (!controller.isGrounded && move_direction.y > -20.0f)
         {
             return gravity * Time.deltaTime;
         }
