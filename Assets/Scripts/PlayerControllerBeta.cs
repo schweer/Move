@@ -75,7 +75,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
         else
         {
-            speed = 8.0f;
+            speed = max_run_speed;
         }
         
         Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
