@@ -5,11 +5,11 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float speed = 8.0f;
+    private float speed;
     private float acceleration = 1.0f;
     private float max_run_speed = 8.0f;
     private float gravity = 45.0f;
-    private float slope_force = 25.0f;
+    private float slope_force = 10.0f;
     private float jump_height = 2.5f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
@@ -39,6 +39,7 @@ public class PlayerControllerBeta : MonoBehaviour
     Vector3 direction;
     Vector3 flat_direction;
     float angle;
+    bool sliding;
 
 	private void Start ()
     {
@@ -54,36 +55,34 @@ public class PlayerControllerBeta : MonoBehaviour
         direction = transform.position - ground_ray.origin;
         flat_direction = new Vector3(direction.x, 0, direction.z);
 
-        ground_ray.origin = transform.position;
-        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
-        ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
-        ground_angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
+        CalculateGroundRay();
         
         slope_transform.rotation = Quaternion.FromToRotation(Vector3.up, ground_ray_hit.normal) * transform.rotation; // Rotate slope ray based on angle beneath player
 
-        slope_ray.origin = slope_transform.position;
-        slope_ray.direction = -slope_transform.up;
-        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
-        slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
+        CalculateSlopeRay();
         
         angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(transform.up, flat_direction));
         //Debug.Log("angle: " + angle);
         
-        if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
+        if (IsSliding())
         {
-            speed *= 1.0f - angle * 0.0002f; //deltatime
+            speed *= 1.003f - angle * 0.0002f; //deltatime
+        }
+        else if (!controller.isGrounded)
+        {
+
         }
         else
         {
             speed = max_run_speed;
         }
         
-        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
-
+        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        /*
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
         //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
-        /*
+        
         if (OnSlope() || controller.isGrounded)
         {
             move_direction.x = (slope_transform.right.x * current_speed_x) + (slope_transform.forward.x * current_speed_z);
@@ -122,8 +121,14 @@ public class PlayerControllerBeta : MonoBehaviour
         {
             move_direction.y = -slope_force * speed;
         }
+       
+        if (IsJumping() && Input.GetKey(KeyCode.CapsLock))
+        {
+            move_direction = new Vector3(move_direction.x, slope_transform.up.y * Jump(), move_direction.z);
+        }
+        //Debug.Log("sliding: " + sliding + " angle: " + angle + " speed: " + speed + " move_direction.magnitude: " + move_direction.magnitude + " " + new Vector3(0, slope_transform.up.y * Jump(), 0) + " move_direction.y: " + move_direction.y);
 
-        if (IsJumping())
+        if (IsJumping() && !Input.GetKey(KeyCode.CapsLock))
         {
             move_direction.y = Jump();
         }
@@ -132,9 +137,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
-        Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
-        Debug.DrawRay(slope_transform.position, slope_transform.up, Color.green, 2);
-        Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
+        DebugRays();
 
         controller.Move(move_direction * Time.deltaTime);
     }
@@ -143,6 +146,13 @@ public class PlayerControllerBeta : MonoBehaviour
     {
         look_input += Input.GetAxis("Mouse X") * look_sensitivity;
         transform.rotation = Quaternion.Euler(0, look_input, 0);
+    }
+
+    private void DebugRays()
+    {
+        Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
+        Debug.DrawRay(slope_transform.position, slope_transform.up, Color.green, 2);
+        Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
     }
 
     private bool OnSlope()
@@ -166,6 +176,18 @@ public class PlayerControllerBeta : MonoBehaviour
         else
         {
             return 0.0f;
+        }
+    }
+
+    private bool IsSliding()
+    {
+        if (angle < 0 && Input.GetKey(KeyCode.CapsLock))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -219,5 +241,21 @@ public class PlayerControllerBeta : MonoBehaviour
         {
             return vertical_input;
         }
+    }
+
+    private void CalculateGroundRay()
+    {
+        ground_ray.origin = transform.position;
+        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
+        ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
+        ground_angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
+    }
+
+    private void CalculateSlopeRay()
+    {
+        slope_ray.origin = slope_transform.position;
+        slope_ray.direction = -slope_transform.up;
+        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
+        slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
     }
 }
