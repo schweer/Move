@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,9 +8,11 @@ public class PlayerControllerBeta : MonoBehaviour
     // Attributes
     private float acceleration = 100.0f;
     private float max_speed = 8.0f;
-    private float gravity = 30.0f;
+    private float gravity = 45.0f;
     private float slope_force = 25.0f;
     private float jump_height = 2.0f;
+    private DateTimeOffset lastDash = DateTime.UtcNow;
+    private double dashCooldown = .5 * 10000000; //first number is in SECONDS, operation is to convert it into ticks that DateTimeOffset uses
 
     // Input
     private float look_input;
@@ -67,10 +70,11 @@ public class PlayerControllerBeta : MonoBehaviour
             if(controller.isGrounded)move_direction.y = (slope_transform.right.y * current_speed_x) + (slope_transform.forward.y * current_speed_z);
             move_direction.z = (slope_transform.right.z * current_speed_x) + (slope_transform.forward.z * current_speed_z);
         }
-        if(!OnSlope() && !controller.isGrounded)
+
+        if (!OnSlope() && !controller.isGrounded)
         {
             move_direction.x = (transform.right.x * current_speed_x) + (transform.forward.x * current_speed_z);
-            if(controller.isGrounded)move_direction.y = (transform.right.y * current_speed_x) + (transform.forward.y * current_speed_z);
+            if(controller.isGrounded) move_direction.y = (transform.right.y * current_speed_x) + (transform.forward.y * current_speed_z);
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
         
@@ -89,6 +93,14 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.y = Jump();
         }
 
+        if ((OnSlope() || controller.isGrounded) && Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            if(ChainDashOffCooldown())
+            {
+                Chaindash();
+            }
+        }
+
         move_direction.y -= Gravity();
         
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
@@ -99,22 +111,11 @@ public class PlayerControllerBeta : MonoBehaviour
         controller.Move(move_direction * Time.deltaTime);
     }
 
+
     private void LateUpdate()
     {
         look_input += Input.GetAxis("Mouse X") * look_sensitivity;
         transform.rotation = Quaternion.Euler(0, look_input, 0);
-    }
-
-    private bool OnSlope()
-    {
-        if (ground_angle != 0 && slope_distance <= on_slope_height)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
     }
 
     private float Gravity()
@@ -126,6 +127,19 @@ public class PlayerControllerBeta : MonoBehaviour
         else
         {
             return 0.0f;
+        }
+    }
+
+    #region Gamestates
+    private bool OnSlope()
+    {
+        if (ground_angle != 0 && slope_distance <= on_slope_height)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -141,6 +155,26 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
+    private bool ChainDashOffCooldown()
+    {
+        double debugElapsed = (DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) / 10000000;
+        Debug.Log(debugElapsed);
+
+        if ((DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) >= dashCooldown)
+        {
+            lastDash = DateTimeOffset.UtcNow;
+            return true;
+        }
+        else
+        {
+            Debug.Log("failing cooldown check");
+            return false;
+        }
+    }
+    #endregion
+
+    #region Simple Movement
+    ///Simple movement input keys: Jump, Axis movement
     private float Jump()
     {
         return Mathf.Sqrt(2 * jump_height * gravity);
@@ -180,4 +214,14 @@ public class PlayerControllerBeta : MonoBehaviour
             return vertical_input;
         }
     }
+    #endregion
+
+    #region Advanced Movement
+
+    private void Chaindash()
+    {
+        //Implement
+    }
+
+    #endregion
 }
