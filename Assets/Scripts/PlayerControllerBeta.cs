@@ -69,12 +69,15 @@ public class PlayerControllerBeta : MonoBehaviour
         angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(transform.up, flat_direction));
         //Debug.Log("angle: " + angle);
         
-        /* slide
         if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
         {
             speed *= 1.0f - angle * 0.0005f; //deltatime
         }
-        */
+        else
+        {
+            speed = 8.0f;
+        }
+        
         Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
 
         current_speed_x = HorizontalInput();
