@@ -71,7 +71,7 @@ public class PlayerControllerBeta : MonoBehaviour
         
         if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
         {
-            speed *= 1.0f - angle * 0.0005f; //deltatime
+            speed *= 1.0f - angle * 0.0002f; //deltatime
         }
         else
         {
