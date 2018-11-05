@@ -5,19 +5,20 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float acceleration = 20.0f;
+    private float speed = 8.0f;
+    private float acceleration = 1.0f;
     private float max_run_speed = 8.0f;
-    private float gravity = 30.0f;
+    private float gravity = 45.0f;
     private float slope_force = 25.0f;
     private float jump_height = 2.5f;
     private float look_sensitivity = 2.0f;
+    private float current_speed_x, current_speed_z;
+    private float max_speed;
 
     // Input
     private float look_input;
     private float horizontal_input, vertical_input;
-    private float current_speed_x, current_speed_z;
-    private float max_speed;
-
+    
     // Parameters
     private float on_slope_height = 0.45f;
     private float ground_distance;
@@ -36,6 +37,7 @@ public class PlayerControllerBeta : MonoBehaviour
     Transform slope_transform;
 
     Vector3 direction;
+    Vector3 flat_direction;
     float angle;
 
 	private void Start ()
@@ -50,8 +52,7 @@ public class PlayerControllerBeta : MonoBehaviour
     private void Update()
     {
         direction = transform.position - ground_ray.origin;
-        direction.y = 0.0f;
-        //Debug.Log("direction: " + direction);
+        flat_direction = new Vector3(direction.x, 0, direction.z);
 
         ground_ray.origin = transform.position;
         Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
@@ -65,22 +66,21 @@ public class PlayerControllerBeta : MonoBehaviour
         Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
         
-        angle = Vector3.SignedAngle(direction, slope_transform.forward, -transform.right);
-        Debug.Log("angle: " + angle);
-
+        angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(transform.up, flat_direction));
+        //Debug.Log("angle: " + angle);
+        
+        /* slide
         if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
         {
-            max_speed = Mathf.Infinity;
+            speed *= 1.0f - angle * 0.0005f; //deltatime
         }
-        else
-        {
-            max_speed = max_run_speed;
-        }
+        */
+        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
 
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
         //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
-
+        /*
         if (OnSlope() || controller.isGrounded)
         {
             move_direction.x = (slope_transform.right.x * current_speed_x) + (slope_transform.forward.x * current_speed_z);
@@ -93,15 +93,31 @@ public class PlayerControllerBeta : MonoBehaviour
             if(controller.isGrounded)move_direction.y = (transform.right.y * current_speed_x) + (transform.forward.y * current_speed_z);
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
-        
+        */
+        horizontal_input = Input.GetAxis("Horizontal") * speed;
+        vertical_input = Input.GetAxis("Vertical") * speed;
+
+        if (OnSlope() || controller.isGrounded)
+        {
+            move_direction.x = (slope_transform.right.x * horizontal_input) + (slope_transform.forward.x * vertical_input);
+            if (controller.isGrounded) move_direction.y = (slope_transform.right.y * horizontal_input) + (slope_transform.forward.y * vertical_input);
+            move_direction.z = (slope_transform.right.z * horizontal_input) + (slope_transform.forward.z * vertical_input);
+        }
+        if (!OnSlope() && !controller.isGrounded)
+        {
+            move_direction.x = (transform.right.x * horizontal_input) + (transform.forward.x * vertical_input);
+            if (controller.isGrounded) move_direction.y = (transform.right.y * horizontal_input) + (transform.forward.y * vertical_input);
+            move_direction.z = (transform.right.z * horizontal_input) + (transform.forward.z * vertical_input);
+        }
+
         if (controller.isGrounded)
         {
             move_direction.y = -5f;
         }
 
-        if (current_speed_x <= max_speed && current_speed_z <= max_speed && OnSlope())
+        if (current_speed_x <= max_run_speed && current_speed_z <= max_run_speed && OnSlope())
         {
-            move_direction.y = -slope_force;
+            move_direction.y = -slope_force * speed;
         }
 
         if (IsJumping())
@@ -173,11 +189,11 @@ public class PlayerControllerBeta : MonoBehaviour
         
         if (horizontal_input > 0)
         {
-            return Mathf.Min(horizontal_input * acceleration, max_speed);
+            return Mathf.Min(horizontal_input * speed, max_speed);
         }
         if (horizontal_input < 0)
         {
-            return Mathf.Max(horizontal_input * acceleration, -max_speed);
+            return Mathf.Max(horizontal_input * speed, -max_speed);
         }
         else
         {
@@ -190,11 +206,11 @@ public class PlayerControllerBeta : MonoBehaviour
 
         if (vertical_input > 0)
         {
-            return Mathf.Min(vertical_input * acceleration, max_speed);
+            return Mathf.Min(vertical_input * speed, max_speed);
         }
         if (vertical_input < 0)
         {
-            return Mathf.Max(vertical_input * acceleration, -max_speed);
+            return Mathf.Max(vertical_input * speed, -max_speed);
         }
         else
         {
