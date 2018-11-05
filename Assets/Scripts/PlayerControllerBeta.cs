@@ -5,15 +5,14 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float speed;
-    private float acceleration = 1.0f;
-    private float max_run_speed = 8.0f;
+    private float max_speed;
+    private float acceleration = 100f;
+    private float max_run_speed = 12.0f;
     private float gravity = 45.0f;
     private float slope_force = 10.0f;
     private float jump_height = 2.5f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
-    private float max_speed;
 
     // Input
     private float look_input;
@@ -66,7 +65,7 @@ public class PlayerControllerBeta : MonoBehaviour
         
         if (IsSliding())
         {
-            speed *= 1.003f - angle * 0.0002f; //deltatime
+            max_speed *= 1.0f - angle * 0.0003f; //deltatime
         }
         else if (!controller.isGrounded)
         {
@@ -74,11 +73,11 @@ public class PlayerControllerBeta : MonoBehaviour
         }
         else
         {
-            speed = max_run_speed;
+            max_speed = max_run_speed;
         }
         
         //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
-        /*
+        
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
         //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
@@ -95,38 +94,22 @@ public class PlayerControllerBeta : MonoBehaviour
             if(controller.isGrounded)move_direction.y = (transform.right.y * current_speed_x) + (transform.forward.y * current_speed_z);
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
-        */
-        horizontal_input = Input.GetAxis("Horizontal") * speed;
-        vertical_input = Input.GetAxis("Vertical") * speed;
-
-        if (OnSlope() || controller.isGrounded)
-        {
-            move_direction.x = (slope_transform.right.x * horizontal_input) + (slope_transform.forward.x * vertical_input);
-            if (controller.isGrounded) move_direction.y = (slope_transform.right.y * horizontal_input) + (slope_transform.forward.y * vertical_input);
-            move_direction.z = (slope_transform.right.z * horizontal_input) + (slope_transform.forward.z * vertical_input);
-        }
-        if (!OnSlope() && !controller.isGrounded)
-        {
-            move_direction.x = (transform.right.x * horizontal_input) + (transform.forward.x * vertical_input);
-            if (controller.isGrounded) move_direction.y = (transform.right.y * horizontal_input) + (transform.forward.y * vertical_input);
-            move_direction.z = (transform.right.z * horizontal_input) + (transform.forward.z * vertical_input);
-        }
 
         if (controller.isGrounded)
         {
-            move_direction.y = -5f;
+            move_direction.y = -5f; // Keeps character from poping off of peaks
         }
 
-        if (current_speed_x <= max_run_speed && current_speed_z <= max_run_speed && OnSlope())
+        if (OnSlope())
         {
-            move_direction.y = -slope_force * speed;
+            move_direction.y = -slope_force * max_speed; // Holds character to slopes at high speed
         }
        
         if (IsJumping() && Input.GetKey(KeyCode.CapsLock))
         {
             move_direction = new Vector3(move_direction.x, slope_transform.up.y * Jump(), move_direction.z);
         }
-        //Debug.Log("sliding: " + sliding + " angle: " + angle + " speed: " + speed + " move_direction.magnitude: " + move_direction.magnitude + " " + new Vector3(0, slope_transform.up.y * Jump(), 0) + " move_direction.y: " + move_direction.y);
+        Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
 
         if (IsJumping() && !Input.GetKey(KeyCode.CapsLock))
         {
@@ -207,42 +190,43 @@ public class PlayerControllerBeta : MonoBehaviour
     {
         return Mathf.Sqrt(2 * jump_height * gravity);
     }
-
+    
     private float HorizontalInput()
     {
         horizontal_input = Input.GetAxis("Horizontal");
         
         if (horizontal_input > 0)
         {
-            return Mathf.Min(horizontal_input * speed, max_speed);
+            return Mathf.Min(horizontal_input * acceleration, max_speed);
         }
         if (horizontal_input < 0)
         {
-            return Mathf.Max(horizontal_input * speed, -max_speed);
+            return Mathf.Max(horizontal_input * acceleration, -max_speed);
         }
         else
         {
             return horizontal_input;
         }
     }
+    
     private float VerticalInput()
     {
         vertical_input = Input.GetAxis("Vertical");
 
         if (vertical_input > 0)
         {
-            return Mathf.Min(vertical_input * speed, max_speed);
+            return Mathf.Min(vertical_input * acceleration, max_speed);
         }
         if (vertical_input < 0)
         {
-            return Mathf.Max(vertical_input * speed, -max_speed);
+            return Mathf.Max(vertical_input * acceleration, -max_speed);
         }
         else
         {
             return vertical_input;
         }
     }
-
+    
     private void CalculateGroundRay()
     {
         ground_ray.origin = transform.position;
