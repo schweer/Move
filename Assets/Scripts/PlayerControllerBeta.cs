@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float max_speed;
+    private float speed;
     private float acceleration = 100f;
     private float max_run_speed = 12.0f;
     private float gravity = 45.0f;
@@ -23,6 +23,7 @@ public class PlayerControllerBeta : MonoBehaviour
     private float ground_distance;
     private float ground_angle;
     private float slope_distance;
+    private float angle;
 
     // Physics
     private Vector3 move_direction;
@@ -30,15 +31,12 @@ public class PlayerControllerBeta : MonoBehaviour
     private Ray slope_ray;
     private RaycastHit ground_ray_hit;
     private RaycastHit slope_ray_hit;
-
+    private Vector3 direction;
+    private Vector3 flat_direction;
+    
     // Components
     CharacterController controller;
     Transform slope_transform;
-
-    Vector3 direction;
-    Vector3 flat_direction;
-    float angle;
-    bool sliding;
 
 	private void Start ()
     {
@@ -63,20 +61,9 @@ public class PlayerControllerBeta : MonoBehaviour
         angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(transform.up, flat_direction));
         //Debug.Log("angle: " + angle);
         
-        if (IsSliding())
-        {
-            max_speed *= 1.0f - angle * 0.0003f; //deltatime
-        }
-        else if (!controller.isGrounded)
-        {
-
-        }
-        else
-        {
-            max_speed = max_run_speed;
-        }
-        
-        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        UpdateMaxSpeed();
+        //Debug.Log("IsRunning(): " + IsRunning() + " IsSliding(): " + IsSliding() + " IsJumping(): " + IsJumping());
+        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
         
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
@@ -100,16 +87,16 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.y = -5f; // Keeps character from poping off of peaks
         }
 
-        if (OnSlope())
+        if (OnSlope()) // if(OnSlope() && !Dashing())
         {
-            move_direction.y = -slope_force * max_speed; // Holds character to slopes at high speed
+            move_direction.y = -slope_force * speed; // Holds character to slopes at high speed
         }
        
         if (IsJumping() && Input.GetKey(KeyCode.CapsLock))
         {
             move_direction = new Vector3(move_direction.x, slope_transform.up.y * Jump(), move_direction.z);
         }
-        Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
+        //Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
 
         if (IsJumping() && !Input.GetKey(KeyCode.CapsLock))
         {
@@ -117,6 +104,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
 
         move_direction.y -= Gravity();
+        Decelerate();
 
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
@@ -138,21 +126,9 @@ public class PlayerControllerBeta : MonoBehaviour
         Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
     }
 
-    private bool OnSlope()
-    {
-        if (ground_angle != 0 && slope_distance <= on_slope_height)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     private float Gravity()
     {
-        if (!controller.isGrounded && move_direction.y > -20.0f)
+        if ((!controller.isGrounded || OnSlope()) && move_direction.y > -20.0f)
         {
             return gravity * Time.deltaTime;
         }
@@ -162,9 +138,52 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
+    private void UpdateMaxSpeed()
+    {
+        if (IsRunning())
+        {
+            speed = max_run_speed;
+        }
+
+        if (IsSliding() && OnSlope())
+        {
+            speed *= 1.0f - angle * 0.02f * Time.deltaTime;
+        }
+
+        if (IsJumping())
+        {
+
+        }
+    }
+
+    private void Decelerate()
+    {
+        if (speed > max_run_speed && !OnSlope() && controller.isGrounded)
+        {
+            speed *= 0.99f;
+        }
+
+        if (speed > max_run_speed && !OnSlope() && !controller.isGrounded)
+        {
+            speed *= 0.995f;
+        }
+    }
+
+    private bool IsRunning()
+    {
+        if (controller.isGrounded && !IsSliding() && !IsJumping())
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private bool IsSliding()
     {
-        if (angle < 0 && Input.GetKey(KeyCode.CapsLock))
+        if (Input.GetKey(KeyCode.CapsLock))
         {
             return true;
         }
@@ -186,6 +205,18 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
+    private bool OnSlope()
+    {
+        if (ground_angle != 0 && slope_distance <= on_slope_height)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
     private float Jump()
     {
         return Mathf.Sqrt(2 * jump_height * gravity);
@@ -197,11 +228,11 @@ public class PlayerControllerBeta : MonoBehaviour
         
         if (horizontal_input > 0)
         {
-            return Mathf.Min(horizontal_input * acceleration, max_speed);
+            return Mathf.Min(horizontal_input * acceleration, speed);
         }
         if (horizontal_input < 0)
         {
-            return Mathf.Max(horizontal_input * acceleration, -max_speed);
+            return Mathf.Max(horizontal_input * acceleration, -speed);
         }
         else
         {
@@ -215,11 +246,11 @@ public class PlayerControllerBeta : MonoBehaviour
 
         if (vertical_input > 0)
         {
-            return Mathf.Min(vertical_input * acceleration, max_speed);
+            return Mathf.Min(vertical_input * acceleration, speed);
         }
         if (vertical_input < 0)
         {
-            return Mathf.Max(vertical_input * acceleration, -max_speed);
+            return Mathf.Max(vertical_input * acceleration, -speed);
         }
         else
         {
