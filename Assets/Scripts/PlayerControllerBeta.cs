@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -13,6 +14,8 @@ public class PlayerControllerBeta : MonoBehaviour
     private float jump_height = 2.5f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
+    private DateTimeOffset lastDash = DateTime.UtcNow;
+    private double dashCooldown = .5 * 10000000; //first number is in SECONDS, operator converts to ticks
 
     // Input
     private float look_input;
@@ -24,6 +27,8 @@ public class PlayerControllerBeta : MonoBehaviour
     private float ground_angle;
     private float slope_distance;
     private float angle;
+
+
 
     // Physics
     private Vector3 move_direction;
@@ -103,6 +108,14 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.y = Jump();
         }
 
+        if ((OnSlope() || controller.isGrounded) && Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            if (ChainDashOffCooldown())
+            {
+                Chaindash();
+            }
+        }
+
         move_direction.y -= Gravity();
         Decelerate();
 
@@ -126,6 +139,8 @@ public class PlayerControllerBeta : MonoBehaviour
         Debug.DrawRay(slope_transform.position, slope_transform.forward, Color.blue, 2);
     }
 
+    #region Physics
+
     private float Gravity()
     {
         if ((!controller.isGrounded || OnSlope()) && move_direction.y > -20.0f)
@@ -140,6 +155,11 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void UpdateMaxSpeed()
     {
+        if (IsDashing())
+        { 
+
+        }
+
         if (IsRunning())
         {
             speed = max_run_speed;
@@ -169,9 +189,29 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
+    private void CalculateGroundRay()
+    {
+        ground_ray.origin = transform.position;
+        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
+        ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
+        ground_angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
+    }
+
+    private void CalculateSlopeRay()
+    {
+        slope_ray.origin = slope_transform.position;
+        slope_ray.direction = -slope_transform.up;
+        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
+        slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
+    }
+
+    #endregion
+
+    #region Game States
+
     private bool IsRunning()
     {
-        if (controller.isGrounded && !IsSliding() && !IsJumping())
+        if (controller.isGrounded && !IsSliding() && !IsJumping() && !IsDashing())
         {
             return true;
         }
@@ -217,15 +257,40 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private float Jump()
+    private bool IsDashing()
     {
-        return Mathf.Sqrt(2 * jump_height * gravity);
+        if (Input.GetKey(KeyCode.Mouse1))
+        {
+            return true;
+        }
+
+        else return false;
     }
-    
+
+    private bool ChainDashOffCooldown()
+    {
+        double debugElapsed = (DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) / 10000000;
+        Debug.Log(debugElapsed);
+
+        if ((DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) >= dashCooldown)
+        {
+            lastDash = DateTimeOffset.UtcNow;
+            return true;
+        }
+        else
+        {
+            Debug.Log("failing cooldown check");
+            return false;
+        }
+    }
+    #endregion
+
+    #region Simple Movement
+
     private float HorizontalInput()
     {
         horizontal_input = Input.GetAxis("Horizontal");
-        
+
         if (horizontal_input > 0)
         {
             return Mathf.Min(horizontal_input * acceleration, speed);
@@ -239,7 +304,7 @@ public class PlayerControllerBeta : MonoBehaviour
             return horizontal_input;
         }
     }
-    
+
     private float VerticalInput()
     {
         vertical_input = Input.GetAxis("Vertical");
@@ -257,20 +322,20 @@ public class PlayerControllerBeta : MonoBehaviour
             return vertical_input;
         }
     }
-    
-    private void CalculateGroundRay()
+
+    private float Jump()
     {
-        ground_ray.origin = transform.position;
-        Physics.Raycast(ground_ray, out ground_ray_hit, Mathf.Infinity);
-        ground_distance = Vector3.Distance(transform.position, ground_ray_hit.point);
-        ground_angle = Vector3.Angle(ground_ray_hit.normal, Vector3.up);
+        return Mathf.Sqrt(2 * jump_height * gravity);
     }
 
-    private void CalculateSlopeRay()
+    #endregion
+
+    #region Advanced Movement
+    private void Chaindash()
     {
-        slope_ray.origin = slope_transform.position;
-        slope_ray.direction = -slope_transform.up;
-        Physics.Raycast(slope_ray, out slope_ray_hit, Mathf.Infinity);
-        slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
+        speed = speed * 2;
     }
+
+
+    #endregion
 }
