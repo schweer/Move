@@ -1,19 +1,22 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControllerBeta : MonoBehaviour
 {
     // Attributes
-    private float speed = 8.0f;
-    private float acceleration = 1.0f;
+    private float speed = 16.0f;
+    private float acceleration = 2.0f;
     private float max_run_speed = 8.0f;
     private float gravity = 45.0f;
     private float slope_force = 25.0f;
-    private float jump_height = 2.5f;
+    private float jump_height = 2.0f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
     private float max_speed;
+    private DateTimeOffset lastDash = DateTime.UtcNow;
+    private double dashCooldown = .5 * 10000000; //first number is in SECONDS, operator converts to ticks
 
     // Input
     private float look_input;
@@ -71,14 +74,14 @@ public class PlayerControllerBeta : MonoBehaviour
         
         if (OnSlope() && angle < 0 && Input.GetKey(KeyCode.CapsLock))
         {
-            speed *= 1.0f - angle * 0.0002f; //deltatime
+            speed *= 1.04f - angle * 0.0002f; //deltatime
         }
         else
         {
-            speed = 8.0f;
+            //speed = 8.0f;
         }
         
-        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
 
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
@@ -128,6 +131,14 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.y = Jump();
         }
 
+        if ((OnSlope() || controller.isGrounded) && Input.GetKeyDown(KeyCode.Mouse1))
+        {
+            if (ChainDashOffCooldown())
+            {
+                Chaindash();
+            }
+        }
+
         move_direction.y -= Gravity();
 
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
@@ -145,18 +156,6 @@ public class PlayerControllerBeta : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, look_input, 0);
     }
 
-    private bool OnSlope()
-    {
-        if (ground_angle != 0 && slope_distance <= on_slope_height)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     private float Gravity()
     {
         if (!controller.isGrounded && move_direction.y > -20.0f)
@@ -166,6 +165,19 @@ public class PlayerControllerBeta : MonoBehaviour
         else
         {
             return 0.0f;
+        }
+    }
+
+    #region Game States
+    private bool OnSlope()
+    {
+        if (ground_angle != 0 && slope_distance <= on_slope_height)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -181,6 +193,25 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
+    private bool ChainDashOffCooldown()
+    {
+        double debugElapsed = (DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) / 10000000;
+        Debug.Log(debugElapsed);
+
+        if ((DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) >= dashCooldown)
+        {
+            lastDash = DateTimeOffset.UtcNow;
+            return true;
+        }
+        else
+        {
+            Debug.Log("failing cooldown check");
+            return false;
+        }
+    }
+    #endregion
+
+    #region Simple Movement
     private float Jump()
     {
         return Mathf.Sqrt(2 * jump_height * gravity);
@@ -220,4 +251,12 @@ public class PlayerControllerBeta : MonoBehaviour
             return vertical_input;
         }
     }
+    #endregion
+
+    #region Advanced Mechanics
+    private void Chaindash()
+    {
+        speed = speed * 2;
+    }
+    #endregion
 }
