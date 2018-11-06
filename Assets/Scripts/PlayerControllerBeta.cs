@@ -14,8 +14,14 @@ public class PlayerControllerBeta : MonoBehaviour
     private float jump_height = 2.5f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
+
+    // Dashing
     private DateTimeOffset lastDash = DateTime.UtcNow;
     private double dashCooldown = .5 * 10000000; //first number is in SECONDS, operator converts to ticks
+    private long chainWindow = (long)(.25 * 10000000);
+    private long failChainWindow = (long)(.25 * 10000000);
+    private enum DashStates {canDash, dashing, inWindow, lockedOut};
+    private DashStates dashState = DashStates.canDash;
 
     // Input
     private float look_input;
@@ -27,8 +33,6 @@ public class PlayerControllerBeta : MonoBehaviour
     private float ground_angle;
     private float slope_distance;
     private float angle;
-
-
 
     // Physics
     private Vector3 move_direction;
@@ -68,7 +72,7 @@ public class PlayerControllerBeta : MonoBehaviour
         
         UpdateMaxSpeed();
         //Debug.Log("IsRunning(): " + IsRunning() + " IsSliding(): " + IsSliding() + " IsJumping(): " + IsJumping());
-        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
         
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
@@ -110,14 +114,37 @@ public class PlayerControllerBeta : MonoBehaviour
 
         if ((OnSlope() || controller.isGrounded) && Input.GetKeyDown(KeyCode.Mouse1))
         {
-            if (ChainDashOffCooldown())
+            switch (dashState)
             {
-                Chaindash();
+                case DashStates.canDash:
+                    dashState = DashStates.dashing;
+                    Dash();
+                    break;
+                case DashStates.inWindow:
+                    dashState = DashStates.dashing;
+                    Dash();
+                    break;
+                case DashStates.dashing:
+                    dashState = DashStates.lockedOut;
+                    UpdateDash();
+                    break;
+                case DashStates.lockedOut:
+                    UpdateDash();
+                    break;
+                default: break;
             }
         }
+   
+
+
 
         move_direction.y -= Gravity();
-        Decelerate();
+
+        if (dashState != DashStates.dashing && dashState != DashStates.inWindow)
+        {
+            Decelerate();
+        }
+ 
 
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
@@ -155,7 +182,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void UpdateMaxSpeed()
     {
-        if (IsDashing())
+        if (dashState == DashStates.dashing)
         { 
 
         }
@@ -211,7 +238,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private bool IsRunning()
     {
-        if (controller.isGrounded && !IsSliding() && !IsJumping() && !IsDashing())
+        if (controller.isGrounded && !IsSliding() && !IsJumping() && dashState != DashStates.dashing)
         {
             return true;
         }
@@ -257,17 +284,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private bool IsDashing()
-    {
-        if (Input.GetKey(KeyCode.Mouse1))
-        {
-            return true;
-        }
-
-        else return false;
-    }
-
-    private bool ChainDashOffCooldown()
+    private bool UpdateDash()
     {
         double debugElapsed = (DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) / 10000000;
         Debug.Log(debugElapsed);
@@ -331,11 +348,17 @@ public class PlayerControllerBeta : MonoBehaviour
     #endregion
 
     #region Advanced Movement
-    private void Chaindash()
+
+    private void Dash()
     {
-        speed = speed * 2;
+        speed = speed * 6.0f;
     }
 
 
     #endregion
+
+    void OnGUI()
+    {
+        GUI.Label(new Rect(10, 10, 100, 20), (current_speed_x).ToString());
+    }
 }
