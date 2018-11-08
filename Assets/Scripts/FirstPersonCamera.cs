@@ -5,7 +5,6 @@ public class FirstPersonCamera : MonoBehaviour
 {
     private float look_sensitivity = 2.0F;
     private float max_look_angle = 75;
-    private float min_look_angle = -75;
     private float horizontal_input, vertical_input;
 
     void Start()
@@ -24,9 +23,9 @@ public class FirstPersonCamera : MonoBehaviour
         }
         else
         {
-            vertical_input = Mathf.Max(min_look_angle, vertical_input);
+            vertical_input = Mathf.Max(-max_look_angle, vertical_input);
         }
 
-        transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -75), 75), horizontal_input, 0);
+        transform.rotation = Quaternion.Euler(Mathf.Min(Mathf.Max(vertical_input, -max_look_angle), max_look_angle), horizontal_input, 0);
     }
 }

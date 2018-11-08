@@ -9,7 +9,7 @@ public class PlayerControllerBeta : MonoBehaviour
     private float max_run_speed = 12.0f;
     private float gravity = 45.0f;
     private float slope_force = 10.0f;
-    private float jump_height = 2.5f;
+    private float jump_height = 2.0f;
     private float look_sensitivity = 2.0f;
     private float current_speed_x, current_speed_z;
     private DateTimeOffset lastDash = DateTime.UtcNow;
@@ -99,7 +99,7 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
 
-        if (IsFalling() && Input.GetKeyDown(KeyCode.CapsLock))
+        if (!controller.isGrounded && !OnSlope() && Input.GetKeyDown(KeyCode.CapsLock))
         {
             FastFall();
         }
@@ -187,7 +187,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
         if (IsSliding() && OnSlope())
         {
-            speed *= 1.0f - angle * 0.02f * Time.deltaTime;
+            speed *= 1.0f - angle * 0.03f * Time.deltaTime;
         }
 
         if ((OnSlope() || controller.isGrounded) && Input.GetKey(KeyCode.Space))
@@ -231,7 +231,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private bool IsRunning()
     {
-        if (controller.isGrounded && !IsSliding() && !IsDashing() && !IsFalling())
+        if (controller.isGrounded && !IsSliding() && !IsDashing())
         {
             return true;
         }
@@ -256,18 +256,6 @@ public class PlayerControllerBeta : MonoBehaviour
     private bool OnSlope()
     {
         if (ground_angle != 0 && slope_distance <= on_slope_height)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    private bool IsFalling()
-    {
-        if (move_direction.y <= 0 && !controller.isGrounded && !OnSlope())
         {
             return true;
         }
