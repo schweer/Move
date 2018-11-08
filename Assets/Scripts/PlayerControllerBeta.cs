@@ -9,6 +9,7 @@ public class PlayerControllerBeta : MonoBehaviour
     private float speed;
     private float acceleration = 100f;
     private float max_run_speed = 12.0f;
+    private float max_fall_speed = 20.0f;
     private float gravity = 45.0f;
     private float slope_force = 10.0f;
     private float jump_height = 2.5f;
@@ -28,8 +29,6 @@ public class PlayerControllerBeta : MonoBehaviour
     private float slope_distance;
     private float angle;
 
-
-
     // Physics
     private Vector3 move_direction;
     private Ray ground_ray;
@@ -40,8 +39,8 @@ public class PlayerControllerBeta : MonoBehaviour
     private Vector3 flat_direction;
     
     // Components
-    CharacterController controller;
-    Transform slope_transform;
+    private CharacterController controller;
+    private Transform slope_transform;
 
 	private void Start ()
     {
@@ -87,6 +86,11 @@ public class PlayerControllerBeta : MonoBehaviour
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
 
+        if (Falling() && Input.GetKeyDown(KeyCode.CapsLock))
+        {
+            FastFall();
+        }
+
         if (controller.isGrounded)
         {
             move_direction.y = -5f; // Keeps character from poping off of peaks
@@ -101,7 +105,7 @@ public class PlayerControllerBeta : MonoBehaviour
         {
             move_direction = new Vector3(move_direction.x, slope_transform.up.y * Jump(), move_direction.z);
         }
-        //Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
+        Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
 
         if (IsJumping() && !Input.GetKey(KeyCode.CapsLock))
         {
@@ -143,7 +147,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private float Gravity()
     {
-        if ((!controller.isGrounded || OnSlope()) && move_direction.y > -20.0f)
+        if ((!controller.isGrounded || OnSlope()) && move_direction.y > -max_fall_speed)
         {
             return gravity * Time.deltaTime;
         }
@@ -211,7 +215,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private bool IsRunning()
     {
-        if (controller.isGrounded && !IsSliding() && !IsJumping() && !IsDashing())
+        if (controller.isGrounded && !IsSliding() && !IsJumping() && !IsDashing() && !Falling())
         {
             return true;
         }
@@ -248,6 +252,18 @@ public class PlayerControllerBeta : MonoBehaviour
     private bool OnSlope()
     {
         if (ground_angle != 0 && slope_distance <= on_slope_height)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    private bool Falling()
+    {
+        if (move_direction.y <= 0 && !controller.isGrounded && !OnSlope())
         {
             return true;
         }
@@ -336,6 +352,9 @@ public class PlayerControllerBeta : MonoBehaviour
         speed = speed * 2;
     }
 
-
+    private void FastFall()
+    {
+        move_direction.y = -max_fall_speed;
+    }
     #endregion
 }
