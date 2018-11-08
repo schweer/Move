@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerControllerBeta : MonoBehaviour
@@ -9,7 +7,6 @@ public class PlayerControllerBeta : MonoBehaviour
     private float speed;
     private float acceleration = 100f;
     private float max_run_speed = 12.0f;
-    private float max_fall_speed = 20.0f;
     private float gravity = 45.0f;
     private float slope_force = 10.0f;
     private float jump_height = 2.5f;
@@ -31,28 +28,46 @@ public class PlayerControllerBeta : MonoBehaviour
 
     // Physics
     private Vector3 move_direction;
+    private Vector3 direction;
+    private Vector3 flat_direction;
     private Ray ground_ray;
     private Ray slope_ray;
     private RaycastHit ground_ray_hit;
     private RaycastHit slope_ray_hit;
-    private Vector3 direction;
-    private Vector3 flat_direction;
+    private ControllerColliderHit wall_hit;
     
     // Components
     private CharacterController controller;
     private Transform slope_transform;
 
+    private bool on_wall = false;
+
 	private void Start ()
     {
         controller = GetComponent<CharacterController>();
         slope_transform = transform.GetChild(0);
-        ground_ray = new Ray(transform.position, -transform.up);
+        ground_ray = new Ray(transform.position, Vector3.down);
         slope_ray = new Ray(slope_transform.position, -slope_transform.up);
+        Cursor.lockState = CursorLockMode.Locked;
         //Debug.Log("ground_angle: " + ground_angle + " controller: " + controller);
 	}
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+
+        if (on_wall == true && speed > max_run_speed)
+        {
+            on_wall = true;
+        }
+        else
+        {
+            on_wall = false;
+        }
+
         direction = transform.position - ground_ray.origin;
         flat_direction = new Vector3(direction.x, 0, direction.z);
 
@@ -62,31 +77,28 @@ public class PlayerControllerBeta : MonoBehaviour
 
         CalculateSlopeRay();
         
-        angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(transform.up, flat_direction));
+        angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(Vector3.up, flat_direction));
         //Debug.Log("angle: " + angle);
         
         UpdateMaxSpeed();
-        //Debug.Log("IsRunning(): " + IsRunning() + " IsSliding(): " + IsSliding() + " IsJumping(): " + IsJumping());
-        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
         
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
-        //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z + " max_speed: " + max_speed);
-        
-        if (OnSlope() || controller.isGrounded)
+        Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z);
+        if ((OnSlope() || controller.isGrounded) && !on_wall)
         {
             move_direction.x = (slope_transform.right.x * current_speed_x) + (slope_transform.forward.x * current_speed_z);
             if(controller.isGrounded)move_direction.y = (slope_transform.right.y * current_speed_x) + (slope_transform.forward.y * current_speed_z);
             move_direction.z = (slope_transform.right.z * current_speed_x) + (slope_transform.forward.z * current_speed_z);
         }
-        if(!OnSlope() && !controller.isGrounded)
+        if(!OnSlope() && !controller.isGrounded && !on_wall)
         {
             move_direction.x = (transform.right.x * current_speed_x) + (transform.forward.x * current_speed_z);
-            if(controller.isGrounded)move_direction.y = (transform.right.y * current_speed_x) + (transform.forward.y * current_speed_z);
             move_direction.z = (transform.right.z * current_speed_x) + (transform.forward.z * current_speed_z);
         }
 
-        if (Falling() && Input.GetKeyDown(KeyCode.CapsLock))
+        if (IsFalling() && Input.GetKeyDown(KeyCode.CapsLock))
         {
             FastFall();
         }
@@ -100,16 +112,10 @@ public class PlayerControllerBeta : MonoBehaviour
         {
             move_direction.y = -slope_force * speed; // Holds character to slopes at high speed
         }
-       
-        if (IsJumping() && Input.GetKey(KeyCode.CapsLock))
-        {
-            move_direction = new Vector3(move_direction.x, slope_transform.up.y * Jump(), move_direction.z);
-        }
-        Debug.Log("velocity: " + controller.velocity + " move_direction.y: " + move_direction.y);
 
-        if (IsJumping() && !Input.GetKey(KeyCode.CapsLock))
+        if ((OnSlope() || controller.isGrounded || on_wall) && Input.GetKey(KeyCode.Space))
         {
-            move_direction.y = Jump();
+            Jump();
         }
 
         if ((OnSlope() || controller.isGrounded) && Input.GetKeyDown(KeyCode.Mouse1))
@@ -120,9 +126,12 @@ public class PlayerControllerBeta : MonoBehaviour
             }
         }
 
-        move_direction.y -= Gravity();
-        Decelerate();
+        if (!on_wall)
+        {
+            move_direction.y -= Gravity();
+        }
 
+        Decelerate();
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
         DebugRays();
@@ -136,6 +145,16 @@ public class PlayerControllerBeta : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, look_input, 0);
     }
 
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        if (Vector3.Angle(hit.normal, Vector3.up) > 89.9f && Vector3.Angle(hit.normal, Vector3.up) < 90.1f && hit.point.y > transform.position.y)
+        {
+            on_wall = true;
+            wall_hit = hit;
+            return;
+        }
+    }
+
     private void DebugRays()
     {
         Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
@@ -147,7 +166,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private float Gravity()
     {
-        if ((!controller.isGrounded || OnSlope()) && move_direction.y > -max_fall_speed)
+        if ((!controller.isGrounded || OnSlope()) && move_direction.y > -gravity)
         {
             return gravity * Time.deltaTime;
         }
@@ -174,7 +193,7 @@ public class PlayerControllerBeta : MonoBehaviour
             speed *= 1.0f - angle * 0.02f * Time.deltaTime;
         }
 
-        if (IsJumping())
+        if ((OnSlope() || controller.isGrounded) && Input.GetKey(KeyCode.Space))
         {
 
         }
@@ -187,9 +206,9 @@ public class PlayerControllerBeta : MonoBehaviour
             speed *= 0.99f;
         }
 
-        if (speed > max_run_speed && !OnSlope() && !controller.isGrounded)
+        if (speed > max_run_speed && on_wall)
         {
-            speed *= 0.995f;
+            speed *= 0.98f;
         }
     }
 
@@ -209,13 +228,18 @@ public class PlayerControllerBeta : MonoBehaviour
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
     }
 
+    private void CalculateWallRay()
+    {
+        
+    }
+
     #endregion
 
     #region Game States
 
     private bool IsRunning()
     {
-        if (controller.isGrounded && !IsSliding() && !IsJumping() && !IsDashing() && !Falling())
+        if (controller.isGrounded && !IsSliding() && !IsDashing() && !IsFalling())
         {
             return true;
         }
@@ -237,18 +261,6 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private bool IsJumping()
-    {
-        if ((OnSlope() || controller.isGrounded) && Input.GetKey(KeyCode.Space))
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
     private bool OnSlope()
     {
         if (ground_angle != 0 && slope_distance <= on_slope_height)
@@ -261,7 +273,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private bool Falling()
+    private bool IsFalling()
     {
         if (move_direction.y <= 0 && !controller.isGrounded && !OnSlope())
         {
@@ -286,7 +298,7 @@ public class PlayerControllerBeta : MonoBehaviour
     private bool ChainDashOffCooldown()
     {
         double debugElapsed = (DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) / 10000000;
-        Debug.Log(debugElapsed);
+        //Debug.Log(debugElapsed);
 
         if ((DateTimeOffset.UtcNow.UtcTicks - lastDash.UtcTicks) >= dashCooldown)
         {
@@ -295,7 +307,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
         else
         {
-            Debug.Log("failing cooldown check");
+            //Debug.Log("failing cooldown check");
             return false;
         }
     }
@@ -339,9 +351,23 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private float Jump()
+    private void Jump()
     {
-        return Mathf.Sqrt(2 * jump_height * gravity);
+        if (!Input.GetKey(KeyCode.CapsLock) && !on_wall)
+        {
+            move_direction.y = Mathf.Sqrt(2 * jump_height * gravity);
+        }
+
+        if (Input.GetKey(KeyCode.CapsLock) && !on_wall)
+        {
+            move_direction = new Vector3(move_direction.x, slope_transform.up.y * Mathf.Sqrt(2 * jump_height * gravity), move_direction.z);
+        }
+
+        if (on_wall)
+        {
+            move_direction = (Vector3.up + wall_hit.normal) * speed;
+            on_wall = false;
+        }
     }
 
     #endregion
@@ -354,7 +380,7 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void FastFall()
     {
-        move_direction.y = -max_fall_speed;
+        move_direction.y = -gravity;
     }
     #endregion
 }
