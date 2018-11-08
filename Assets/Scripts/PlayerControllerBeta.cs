@@ -81,7 +81,7 @@ public class PlayerControllerBeta : MonoBehaviour
         angle = Vector3.SignedAngle(direction, flat_direction, Vector3.Cross(Vector3.up, flat_direction));
         //Debug.Log("angle: " + angle);
         
-        UpdateMaxSpeed();
+        UpdateSpeed();
         Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
         
         current_speed_x = HorizontalInput();
@@ -173,7 +173,7 @@ public class PlayerControllerBeta : MonoBehaviour
         }
     }
 
-    private void UpdateMaxSpeed()
+    private void UpdateSpeed()
     {
         if (current_speed_x == 0 && current_speed_z == 0)
         {
@@ -198,16 +198,10 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void Decelerate()
     {
-        if (speed > max_run_speed && !OnSlope() && controller.isGrounded)
+        if (speed > max_run_speed)
         {
             speed *= 0.99f;
         }
-        
-        if (speed > max_run_speed && on_wall)
-        {
-            speed *= 0.99f;
-        }
-        
     }
 
     private void CalculateGroundRay()
