@@ -45,6 +45,7 @@ public class PlayerControllerBeta : MonoBehaviour
 	private void Start ()
     {
         controller = GetComponent<CharacterController>();
+        speed = max_run_speed;
         slope_transform = transform.GetChild(0);
         ground_ray = new Ray(transform.position, Vector3.down);
         slope_ray = new Ray(slope_transform.position, -slope_transform.up);
@@ -59,7 +60,7 @@ public class PlayerControllerBeta : MonoBehaviour
             Cursor.lockState = CursorLockMode.None;
         }
 
-        if (on_wall == true && speed > max_run_speed)
+        if (on_wall == true && speed > max_run_speed && (controller.collisionFlags == CollisionFlags.Sides))
         {
             on_wall = true;
         }
@@ -81,11 +82,11 @@ public class PlayerControllerBeta : MonoBehaviour
         //Debug.Log("angle: " + angle);
         
         UpdateMaxSpeed();
-        //Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
+        Debug.Log("speed:" + speed + " increase: " + (speed - speed * 0.99f) + " direction: " + direction + " angle: " + angle);
         
         current_speed_x = HorizontalInput();
         current_speed_z = VerticalInput();
-        Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z);
+        //Debug.Log("current_speed_x: " + current_speed_x + " current_speed_z: " + current_speed_z);
         if ((OnSlope() || controller.isGrounded) && !on_wall)
         {
             move_direction.x = (slope_transform.right.x * current_speed_x) + (slope_transform.forward.x * current_speed_z);
@@ -126,11 +127,7 @@ public class PlayerControllerBeta : MonoBehaviour
             }
         }
 
-        if (!on_wall)
-        {
-            move_direction.y -= Gravity();
-        }
-
+        move_direction.y -= Gravity();
         Decelerate();
         //Debug.Log("controller.isGrounded: " + controller.isGrounded + " ground_distance: " + ground_distance + " slope_distance: " + slope_distance);
         //Debug.Log("move_direction.y: " + move_direction.y + " transform.position.y: " + transform.position.y);
@@ -178,14 +175,14 @@ public class PlayerControllerBeta : MonoBehaviour
 
     private void UpdateMaxSpeed()
     {
+        if (current_speed_x == 0 && current_speed_z == 0)
+        {
+            speed = max_run_speed;
+        }
+
         if (IsDashing())
         { 
 
-        }
-
-        if (IsRunning())
-        {
-            speed = max_run_speed;
         }
 
         if (IsSliding() && OnSlope())
@@ -205,11 +202,12 @@ public class PlayerControllerBeta : MonoBehaviour
         {
             speed *= 0.99f;
         }
-
+        
         if (speed > max_run_speed && on_wall)
         {
-            speed *= 0.98f;
+            speed *= 0.99f;
         }
+        
     }
 
     private void CalculateGroundRay()
