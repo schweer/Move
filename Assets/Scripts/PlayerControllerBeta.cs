@@ -142,16 +142,6 @@ public class PlayerControllerBeta : MonoBehaviour
         transform.rotation = Quaternion.Euler(0, look_input, 0);
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
-        if (Vector3.Angle(hit.normal, Vector3.up) > 89.9f && Vector3.Angle(hit.normal, Vector3.up) < 90.1f && hit.point.y > transform.position.y)
-        {
-            on_wall = true;
-            wall_hit = hit;
-            return;
-        }
-    }
-
     private void DebugRays()
     {
         Debug.DrawRay(slope_transform.position, slope_transform.right, Color.red, 2);
@@ -220,9 +210,14 @@ public class PlayerControllerBeta : MonoBehaviour
         slope_distance = Vector3.Distance(slope_transform.position, slope_ray_hit.point);
     }
 
-    private void CalculateWallRay()
+    private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        
+        if (Vector3.Angle(hit.normal, Vector3.up) > 89.9f && Vector3.Angle(hit.normal, Vector3.up) < 90.1f && hit.point.y > transform.position.y)
+        {
+            on_wall = true;
+            wall_hit = hit;
+            return;
+        }
     }
 
     #endregion
